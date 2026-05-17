@@ -21,6 +21,7 @@ import { ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { HeroTerminalDemo } from '../hero-terminal-demo'
+import { OrbitingModels } from '../orbiting-models'
 
 interface HeroProps {
   className?: string
@@ -98,6 +99,14 @@ export function Hero(props: HeroProps) {
             </>
           )}
         </div>
+      </div>
+
+      {/* Orbiting Models Animation */}
+      <div
+        className='landing-animate-fade-up w-full max-w-5xl mt-12 opacity-0'
+        style={{ animationDelay: '240ms' }}
+      >
+        <OrbitingModels />
       </div>
 
       <div

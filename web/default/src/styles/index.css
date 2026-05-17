@@ -583,3 +583,225 @@ For commercial licensing, please contact support@quantumnous.com
     animation: none !important;
   }
 }
+
+/* ── Orbiting Models Animations ── */
+/* Upper parabola: path from (0,300) to (1000,300) with control point (500,0) */
+@keyframes orbit-parabola-upper {
+  0% {
+    left: 0%;
+    top: 75%;
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  10% {
+    left: 10%;
+    top: 65%;
+  }
+  25% {
+    left: 25%;
+    top: 35%;
+  }
+  50% {
+    left: 50%;
+    top: 0%;
+  }
+  75% {
+    left: 75%;
+    top: 35%;
+  }
+  90% {
+    left: 90%;
+    top: 65%;
+  }
+  97% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    top: 75%;
+    opacity: 0;
+  }
+}
+
+/* Lower parabola: path from (0,100) to (1000,100) with control point (500,400) */
+@keyframes orbit-parabola-lower {
+  0% {
+    left: 0%;
+    top: 25%;
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  10% {
+    left: 10%;
+    top: 35%;
+  }
+  25% {
+    left: 25%;
+    top: 65%;
+  }
+  50% {
+    left: 50%;
+    top: 100%;
+  }
+  75% {
+    left: 75%;
+    top: 65%;
+  }
+  90% {
+    left: 90%;
+    top: 35%;
+  }
+  97% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    top: 25%;
+    opacity: 0;
+  }
+}
+
+.orbiting-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  will-change: left, top, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbiting-item {
+    animation: none !important;
+    display: none;
+  }
+}
+
+/* Earth rotate and rays */
+@keyframes earth-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.earth-rotate {
+  animation: earth-rotate 28s linear infinite;
+}
+
+@keyframes ray-shoot {
+  0% {
+    transform: translateX(0);
+    opacity: 0.9;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120px) scaleX(1);
+    opacity: 0;
+  }
+}
+
+.ray-container {
+  width: 0;
+  height: 0;
+}
+
+.ray {
+  width: 2px;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.0));
+  transform-origin: left center;
+  animation-name: ray-shoot;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(.2,.8,.2,1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .earth-rotate, .ray { animation: none !important }
+}
+
+.earth-shell {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.earth-globe {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.12), inset 0 0 40px rgba(255,255,255,0.08);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08), transparent 48%);
+}
+
+.orbit-track {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1px dashed rgba(255, 255, 255, 0.5);
+  opacity: 0.85;
+  animation: orbit-track-rotate linear infinite;
+}
+
+@keyframes orbit-track-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.earth-route {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 6;
+  stroke-linecap: round;
+  opacity: 0.92;
+  animation: dash-move 3s linear infinite;
+}
+
+@keyframes dash-move {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+.earth-shell {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.earth-globe {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.12), inset 0 0 40px rgba(255,255,255,0.08);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08), transparent 48%);
+}
+
+.earth-pin {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #ff7a35;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+  transform: translate(-50%, -50%);
+}
+
+.earth-pin::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: white;
+  transform: translate(-50%, -50%);
+}
