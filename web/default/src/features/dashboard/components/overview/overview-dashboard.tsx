@@ -53,12 +53,8 @@ import {
 import { fetchTokenKey, getApiKeys } from '@/features/keys/api'
 import type { ApiKey } from '@/features/keys/types'
 import { useApiInfo } from '../../hooks/use-status-data'
-import { AnnouncementsPanel } from './announcements-panel'
-import { ApiInfoPanel } from './api-info-panel'
-import { FAQPanel } from './faq-panel'
 import { PerformanceHealthPanel } from './performance-health-panel'
-import { SummaryCards } from './summary-cards'
-import { UptimePanel } from './uptime-panel'
+import { UsageOverviewSection } from './usage-overview-section'
 
 const SETUP_GUIDE_VISIBILITY_STORAGE_KEY =
   'dashboard_overview_setup_guide_expanded'
@@ -713,29 +709,15 @@ export function OverviewDashboard() {
         </CardStaggerContainer>
       )}
 
-      <SummaryCards />
+      <UsageOverviewSection />
 
-      <CardStaggerContainer className='grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]'>
-        <div className='grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2'>
-          {isAdmin && (
-            <CardStaggerItem className='lg:col-span-2'>
-              <PerformanceHealthPanel />
-            </CardStaggerItem>
-          )}
+      {isAdmin && (
+        <CardStaggerContainer>
           <CardStaggerItem>
-            <ApiInfoPanel />
+            <PerformanceHealthPanel />
           </CardStaggerItem>
-          <CardStaggerItem>
-            <AnnouncementsPanel />
-          </CardStaggerItem>
-          <CardStaggerItem>
-            <FAQPanel />
-          </CardStaggerItem>
-        </div>
-        <CardStaggerItem>
-          <UptimePanel />
-        </CardStaggerItem>
-      </CardStaggerContainer>
+        </CardStaggerContainer>
+      )}
     </div>
   )
 }

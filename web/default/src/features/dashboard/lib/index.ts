@@ -34,4 +34,8 @@ export {
 } from './api-info'
 export { processChartData, processUserChartData } from './charts'
 export { safeDivide, calculateDashboardStats } from './stats'
+export {
+  processOverviewStats,
+  getOverviewTrendSpec,
+} from './overview-trends'
 export { getPreviewText } from './text'
