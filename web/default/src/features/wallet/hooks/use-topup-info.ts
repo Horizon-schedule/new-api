@@ -194,16 +194,18 @@ export function useTopupInfo() {
 
       setTopupInfo(processedData)
 
-      if (processedData.amount_options.length > 0) {
-        const customPresets = mergePresetAmounts(
-          processedData.amount_options,
-          processedData.discount || {}
+      const discountMap = processedData.discount || {}
+      const hasConfiguredPresets =
+        processedData.amount_options.length > 0 ||
+        Object.keys(discountMap).length > 0
+
+      if (hasConfiguredPresets) {
+        setPresetAmounts(
+          mergePresetAmounts(processedData.amount_options, discountMap)
         )
-        setPresetAmounts(customPresets)
       } else {
         const minTopup = getMinTopupAmount(processedData)
-        const defaultPresets = generatePresetAmounts(minTopup)
-        setPresetAmounts(defaultPresets)
+        setPresetAmounts(generatePresetAmounts(minTopup))
       }
     } catch (err) {
       // eslint-disable-next-line no-console

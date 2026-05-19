@@ -21,7 +21,7 @@ import { ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { HeroTerminalDemo } from '../hero-terminal-demo'
-import { OrbitingModels } from '../orbiting-models'
+import { HeroModelShowcase } from '../hero-model-showcase'
 
 interface HeroProps {
   className?: string
@@ -32,23 +32,11 @@ export function Hero(props: HeroProps) {
   const { t } = useTranslation()
 
   return (
-    <section className='relative z-10 flex flex-col items-center overflow-hidden px-6 pt-28 pb-16 md:pt-36 md:pb-24'>
-      {/* Radial gradient background */}
+    <section className='relative z-10 flex flex-col items-center overflow-x-clip px-6 pt-28 pb-16 md:pt-36 md:pb-24'>
+      {/* 轻量网格纹理（底色由 .home-landing 提供） */}
       <div
         aria-hidden
-        className='pointer-events-none absolute inset-0 -z-10 opacity-25 dark:opacity-[0.12]'
-        style={{
-          background: [
-            'radial-gradient(ellipse 60% 50% at 20% 20%, oklch(0.72 0.18 250 / 80%) 0%, transparent 70%)',
-            'radial-gradient(ellipse 50% 40% at 80% 15%, oklch(0.65 0.15 200 / 60%) 0%, transparent 70%)',
-            'radial-gradient(ellipse 40% 35% at 40% 80%, oklch(0.70 0.12 280 / 40%) 0%, transparent 70%)',
-          ].join(', '),
-        }}
-      />
-      {/* Grid pattern */}
-      <div
-        aria-hidden
-        className='absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_30%,black_20%,transparent_100%)] bg-[size:4rem_4rem] opacity-[0.08]'
+        className='pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_30%,black_20%,transparent_100%)] bg-[size:4rem_4rem] opacity-[0.06] dark:opacity-[0.08]'
       />
 
       <div className='flex max-w-3xl flex-col items-center text-center'>
@@ -101,12 +89,12 @@ export function Hero(props: HeroProps) {
         </div>
       </div>
 
-      {/* Orbiting Models Animation */}
+      {/* AI providers & popular models */}
       <div
-        className='landing-animate-fade-up mt-12 w-full max-w-5xl opacity-0'
+        className='landing-animate-fade-up mt-12 w-full opacity-0'
         style={{ animationDelay: '240ms' }}
       >
-        <OrbitingModels />
+        <HeroModelShowcase />
       </div>
 
       <div

@@ -43,7 +43,7 @@ export function Home() {
   if (content) {
     return (
       <PublicLayout showMainContainer={false}>
-        <main className='overflow-x-hidden'>
+        <main className='home-landing overflow-x-hidden'>
           {isUrl ? (
             <iframe
               src={content}
@@ -62,7 +62,7 @@ export function Home() {
 
   return (
     <PublicLayout showMainContainer={false}>
-      <main className='overflow-x-hidden'>
+      <main className='home-landing overflow-x-hidden'>
       <Hero isAuthenticated={isAuthenticated} />
       <Stats />
       <Features />

@@ -35,15 +35,24 @@ import {
   AmountDiscountDialog,
   type AmountDiscountData,
 } from './amount-discount-dialog'
+import {
+  addAmountOptionJson,
+  removeAmountOptionJson,
+} from './payment-amount-sync'
 
 type AmountDiscountVisualEditorProps = {
   value: string
   onChange: (value: string) => void
+  /** 同步更新「充值金额选项」，与折扣档位增删保持一致 */
+  amountOptionsValue?: string
+  onAmountOptionsChange?: (value: string) => void
 }
 
 export function AmountDiscountVisualEditor({
   value,
   onChange,
+  amountOptionsValue,
+  onAmountOptionsChange,
 }: AmountDiscountVisualEditorProps) {
   const { t } = useTranslation()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -77,13 +86,25 @@ export function AmountDiscountVisualEditor({
       }
     )
 
+    let nextAmountOptions = amountOptionsValue
+
     if (editData && editData.amount !== data.amount) {
       delete discountObject[editData.amount.toString()]
+      if (nextAmountOptions !== undefined && onAmountOptionsChange) {
+        nextAmountOptions = removeAmountOptionJson(
+          nextAmountOptions,
+          editData.amount
+        )
+      }
     }
 
     discountObject[data.amount.toString()] = data.discountRate
 
     onChange(JSON.stringify(discountObject, null, 2))
+
+    if (nextAmountOptions !== undefined && onAmountOptionsChange) {
+      onAmountOptionsChange(addAmountOptionJson(nextAmountOptions, data.amount))
+    }
   }
 
   const handleDelete = (amount: number) => {
@@ -99,6 +120,10 @@ export function AmountDiscountVisualEditor({
     delete discountObject[amount.toString()]
 
     onChange(JSON.stringify(discountObject, null, 2))
+
+    if (amountOptionsValue !== undefined && onAmountOptionsChange) {
+      onAmountOptionsChange(removeAmountOptionJson(amountOptionsValue, amount))
+    }
   }
 
   const handleEdit = (discount: AmountDiscountData) => {

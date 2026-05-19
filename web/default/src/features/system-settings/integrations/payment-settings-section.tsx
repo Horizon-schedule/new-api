@@ -940,6 +940,13 @@ export function PaymentSettingsSection({
                         <AmountDiscountVisualEditor
                           value={field.value}
                           onChange={field.onChange}
+                          amountOptionsValue={form.watch('AmountOptions')}
+                          onAmountOptionsChange={(next) =>
+                            form.setValue('AmountOptions', next, {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            })
+                          }
                         />
                       ) : (
                         <Textarea

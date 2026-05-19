@@ -151,18 +151,43 @@ export function generatePresetAmounts(minAmount: number): PresetAmount[] {
 }
 
 /**
- * Merge custom preset amounts with discounts
+ * 合并「预设充值金额」与「金额折扣」档位，生成钱包展示用的预设列表。
+ * - 展示金额为 amount_options 与 discount 键的并集（去重、升序）
+ * - 删除后台折扣档位后，对应金额不再出现在并集中（除非仍在 amount_options 中）
  */
 export function mergePresetAmounts(
   amountOptions: number[],
   discounts: Record<number, number>
 ): PresetAmount[] {
-  if (!amountOptions || amountOptions.length === 0) {
+  const amounts = new Set<number>()
+
+  for (const amount of amountOptions ?? []) {
+    if (Number.isFinite(amount) && amount > 0) {
+      amounts.add(amount)
+    }
+  }
+
+  for (const [key, rate] of Object.entries(discounts ?? {})) {
+    const amount = Number(key)
+    const discountRate = Number(rate)
+    if (
+      Number.isFinite(amount) &&
+      amount > 0 &&
+      Number.isFinite(discountRate) &&
+      discountRate > 0
+    ) {
+      amounts.add(amount)
+    }
+  }
+
+  if (amounts.size === 0) {
     return []
   }
 
-  return amountOptions.map((amount) => ({
-    value: amount,
-    discount: discounts[amount] || 1.0,
-  }))
+  return Array.from(amounts)
+    .sort((a, b) => a - b)
+    .map((amount) => ({
+      value: amount,
+      discount: discounts[amount] ?? 1.0,
+    }))
 }

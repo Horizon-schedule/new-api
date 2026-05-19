@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { Settings, Zap, BarChart3 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AnimateInView } from '@/components/animate-in-view'
+import { cn } from '@/lib/utils'
 
 export function HowItWorks() {
   const { t } = useTranslation()
@@ -30,7 +31,9 @@ export function HowItWorks() {
       desc: t(
         'Add your API keys, set up channels and configure access permissions'
       ),
-      icon: <Settings className='size-6' strokeWidth={1.5} />,
+      icon: <Settings className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
+      badgeClassName: 'bg-blue-600',
     },
     {
       num: '2',
@@ -38,13 +41,17 @@ export function HowItWorks() {
       desc: t(
         'Connect through OpenAI, Claude, Gemini, and other compatible API routes'
       ),
-      icon: <Zap className='size-6' strokeWidth={1.5} />,
+      icon: <Zap className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-amber-600 bg-amber-500/10 border-amber-500/20',
+      badgeClassName: 'bg-amber-600',
     },
     {
       num: '3',
       title: t('Monitor'),
       desc: t('Track usage, costs and performance with real-time analytics'),
-      icon: <BarChart3 className='size-6' strokeWidth={1.5} />,
+      icon: <BarChart3 className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20',
+      badgeClassName: 'bg-emerald-600',
     },
   ]
 
@@ -69,10 +76,20 @@ export function HowItWorks() {
               className='relative flex flex-col items-center text-center'
             >
               <div className='relative mb-6'>
-                <div className='text-muted-foreground border-border/50 bg-muted/30 flex size-16 items-center justify-center rounded-2xl border transition-colors'>
+                <div
+                  className={cn(
+                    'flex size-16 items-center justify-center rounded-2xl border transition-colors',
+                    step.iconClassName
+                  )}
+                >
                   {step.icon}
                 </div>
-                <div className='bg-foreground text-background absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full text-xs font-bold'>
+                <div
+                  className={cn(
+                    'absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full text-xs font-bold text-white',
+                    step.badgeClassName
+                  )}
+                >
                   {step.num}
                 </div>
               </div>

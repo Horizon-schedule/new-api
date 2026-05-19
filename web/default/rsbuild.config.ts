@@ -11,15 +11,34 @@ export default defineConfig(({ envMode }) => {
   const serverUrl =
     process.env.VITE_REACT_APP_SERVER_URL ||
     env.rawPublicVars.VITE_REACT_APP_SERVER_URL ||
-    'http://localhost:3000'
+    'http://localhost:3001'
 
   const isProd = envMode === 'production'
   const devProxy = Object.fromEntries(
     (['/api', '/mj', '/pg'] as const).map((key) => [
       key,
-      { target: serverUrl, changeOrigin: true },
+      {
+        target: serverUrl,
+        changeOrigin: true,
+        onError: (
+          err: NodeJS.ErrnoException,
+          _req: unknown,
+          res: { writeHead: (code: number, headers: object) => void; end: (body: string) => void },
+        ) => {
+          if (!isProd) {
+            console.error(
+              `[dev-proxy] ${key} -> ${serverUrl} failed (${err.code ?? err.message}). ` +
+                'Start the Go backend with PORT=3001 (see web/default/.env.development).',
+            )
+          }
+          if (!res.headersSent) {
+            res.writeHead(502, { 'Content-Type': 'text/plain' })
+          }
+          res.end('Bad Gateway')
+        },
+      },
     ]),
-  ) as Record<string, { target: string; changeOrigin: boolean }>
+  )
 
   return {
     plugins: [pluginReact()],

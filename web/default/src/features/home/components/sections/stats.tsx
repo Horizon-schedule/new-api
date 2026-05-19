@@ -16,8 +16,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, type ReactNode } from 'react'
+import {
+  BrainCircuit,
+  CalendarClock,
+  Network,
+  Route,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
 
 interface CounterProps {
   end: number
@@ -91,6 +98,8 @@ interface StatItem {
   end: number
   suffix: string
   label: string
+  icon: ReactNode
+  iconClassName: string
   decimals?: number
 }
 
@@ -98,10 +107,34 @@ export function Stats(_props: StatsProps) {
   const { t } = useTranslation()
 
   const stats: StatItem[] = [
-    { end: 50, suffix: '+', label: t('upstream services integrated') },
-    { end: 100, suffix: '+', label: t('model billing support') },
-    { end: 50, suffix: '+', label: t('compatible API routes') },
-    { end: 10, suffix: '+', label: t('scheduling controls') },
+    {
+      end: 50,
+      suffix: '+',
+      label: t('upstream services integrated'),
+      icon: <Network className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
+    },
+    {
+      end: 100,
+      suffix: '+',
+      label: t('model billing support'),
+      icon: <BrainCircuit className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-violet-600 bg-violet-500/10 border-violet-500/20',
+    },
+    {
+      end: 50,
+      suffix: '+',
+      label: t('compatible API routes'),
+      icon: <Route className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20',
+    },
+    {
+      end: 10,
+      suffix: '+',
+      label: t('scheduling controls'),
+      icon: <CalendarClock className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-amber-600 bg-amber-500/10 border-amber-500/20',
+    },
   ]
 
   return (
@@ -113,10 +146,19 @@ export function Stats(_props: StatsProps) {
               key={s.label}
               className='flex flex-col items-center text-center'
             >
+              <div
+                className={cn(
+                  'mb-3 flex size-14 items-center justify-center rounded-xl border',
+                  s.iconClassName
+                )}
+                aria-hidden='true'
+              >
+                {s.icon}
+              </div>
               <span className='text-2xl font-bold tracking-tight md:text-3xl'>
                 <Counter end={s.end} suffix={s.suffix} decimals={s.decimals} />
               </span>
-              <span className='text-muted-foreground mt-1.5 text-xs'>
+              <span className='text-muted-foreground mt-2 text-sm font-medium md:text-base'>
                 {s.label}
               </span>
             </div>

@@ -30,7 +30,8 @@ import {
 import { useTranslation } from 'react-i18next'
 import { AnimateInView } from '@/components/animate-in-view'
 import { modelToColor } from '@/lib/model-colors'
-import { FEATURE_PROVIDER_NAMES } from '@/features/home/lib/orbit-models'
+import { cn } from '@/lib/utils'
+import { FEATURE_PROVIDER_NAMES } from '@/features/home/lib/ai-providers'
 
 interface FeaturesProps {
   className?: string
@@ -170,22 +171,26 @@ export function Features(_props: FeaturesProps) {
 
   const additionalFeatures = [
     {
-      icon: <Gauge className='size-5' strokeWidth={1.5} />,
+      icon: <Gauge className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-blue-600 bg-blue-500/10 border-blue-500/20',
       title: t('High Performance'),
       desc: t('Support for high concurrency with automatic load balancing'),
     },
     {
-      icon: <DollarSign className='size-5' strokeWidth={1.5} />,
+      icon: <DollarSign className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20',
       title: t('Transparent Billing'),
       desc: t('Pay-as-you-go with real-time usage monitoring'),
     },
     {
-      icon: <Users className='size-5' strokeWidth={1.5} />,
+      icon: <Users className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-violet-600 bg-violet-500/10 border-violet-500/20',
       title: t('Team Collaboration'),
       desc: t('Multi-user management with flexible permission allocation'),
     },
     {
-      icon: <HeartHandshake className='size-5' strokeWidth={1.5} />,
+      icon: <HeartHandshake className='size-6' strokeWidth={1.75} />,
+      iconClassName: 'text-amber-600 bg-amber-500/10 border-amber-500/20',
       title: t('Open Source'),
       desc: t('Community driven, self-hosted, and extensible'),
     },
@@ -237,11 +242,16 @@ export function Features(_props: FeaturesProps) {
               animation='fade-up'
               className='flex flex-col items-center text-center'
             >
-              <div className='text-muted-foreground border-border/50 bg-muted/30 group-hover:text-foreground mb-3 flex size-12 items-center justify-center rounded-xl border transition-colors'>
+              <div
+                className={cn(
+                  'mb-4 flex size-14 items-center justify-center rounded-xl border transition-colors',
+                  f.iconClassName
+                )}
+              >
                 {f.icon}
               </div>
-              <h3 className='mb-1.5 text-sm font-semibold'>{f.title}</h3>
-              <p className='text-muted-foreground max-w-[200px] text-xs leading-relaxed'>
+              <h3 className='mb-2 text-base font-bold md:text-lg'>{f.title}</h3>
+              <p className='text-muted-foreground max-w-[240px] text-sm leading-relaxed font-medium md:text-base'>
                 {f.desc}
               </p>
             </AnimateInView>
