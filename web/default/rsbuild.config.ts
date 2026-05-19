@@ -11,7 +11,7 @@ export default defineConfig(({ envMode }) => {
   const serverUrl =
     process.env.VITE_REACT_APP_SERVER_URL ||
     env.rawPublicVars.VITE_REACT_APP_SERVER_URL ||
-    'http://localhost:3001'
+    'http://localhost:3000'
 
   const isProd = envMode === 'production'
   const devProxy = Object.fromEntries(
@@ -28,7 +28,7 @@ export default defineConfig(({ envMode }) => {
           if (!isProd) {
             console.error(
               `[dev-proxy] ${key} -> ${serverUrl} failed (${err.code ?? err.message}). ` +
-                'Start the Go backend with PORT=3001 (see web/default/.env.development).',
+                'Start the Go backend with PORT=3000 (see web/default/.env.development).',
             )
           }
           if (!res.headersSent) {
@@ -84,7 +84,7 @@ export default defineConfig(({ envMode }) => {
     },
     server: {
       host: '0.0.0.0',
-      // 前端开发监听 3000；API 代理到 .env 中的 VITE_REACT_APP_SERVER_URL（建议后端 PORT=3001）
+      // API 代理到 .env 中的 VITE_REACT_APP_SERVER_URL（默认 http://localhost:3000）
       port: isProd ? undefined : 3000,
       proxy: devProxy,
     },
