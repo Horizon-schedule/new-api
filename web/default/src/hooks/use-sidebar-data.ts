@@ -121,12 +121,12 @@ export function useSidebarData(): SidebarData {
         title: t('Admin'),
         items: [
           {
-            title: t('Channels'),
+            title: t('Channel Management'),
             url: '/channels',
             icon: Radio,
           },
           {
-            title: t('Models'),
+            title: t('Model Management'),
             url: '/models/metadata',
             icon: Box,
           },

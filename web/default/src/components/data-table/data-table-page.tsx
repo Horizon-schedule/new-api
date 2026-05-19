@@ -188,6 +188,12 @@ export type DataTablePageProps<TData> = {
   tableClassName?: string
 
   /**
+   * Keep the table inside a viewport-height scroll area so the horizontal
+   * scrollbar stays visible without scrolling past all rows.
+   */
+  tableViewportScroll?: boolean
+
+  /**
    * Desktop `<TableHeader>` className override.
    * Useful for sticky headers (`'sticky top-0 z-10 bg-muted/30'`) on long lists.
    */
@@ -303,13 +309,21 @@ function renderDesktop<TData>(
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border transition-opacity duration-150',
+        'rounded-lg border transition-opacity duration-150',
+        props.tableViewportScroll
+          ? 'max-h-[calc(100vh-14rem)] overflow-auto'
+          : 'overflow-hidden',
         isFetchingOnly && 'pointer-events-none opacity-60',
         props.tableClassName
       )}
     >
       <Table>
-        <TableHeader className={props.tableHeaderClassName}>
+        <TableHeader
+          className={cn(
+            props.tableViewportScroll && 'bg-muted/30 sticky top-0 z-10',
+            props.tableHeaderClassName
+          )}
+        >
           {props.table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (

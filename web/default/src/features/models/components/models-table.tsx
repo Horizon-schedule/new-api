@@ -231,6 +231,7 @@ export function ModelsTable() {
       )}
       skeletonKeyPrefix='model-skeleton'
       applyHeaderSize
+      tableViewportScroll
       toolbarProps={{
         searchPlaceholder: t('Filter by model name...'),
         filters: [

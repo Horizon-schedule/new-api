@@ -35,6 +35,7 @@ import {
   getEndpointTypeLabels,
   getQuotaTypeLabels,
 } from '../constants'
+import { formatModelTagLabel } from '@/lib/model-tag-label'
 import { parseTags } from '../lib/filters'
 import type { PricingModel, PricingVendor } from '../types'
 
@@ -216,7 +217,7 @@ export function PricingSidebar(props: PricingSidebarProps) {
     },
     ...props.tags.map((tag) => ({
       value: tag,
-      label: tag,
+      label: formatModelTagLabel(tag, t),
       count: countBy(props.models, (model) =>
         parseTags(model.tags)
           .map((item) => item.toLowerCase())

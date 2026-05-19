@@ -58,6 +58,7 @@ import {
   getDynamicPricingTiers,
   isDynamicPricingModel,
 } from '../lib/dynamic-price'
+import { formatModelTagLabel } from '@/lib/model-tag-label'
 import { parseTags } from '../lib/filters'
 import { getAvailableGroups, isTokenBasedModel } from '../lib/model-helpers'
 import { inferModelMetadata } from '../lib/model-metadata'
@@ -326,7 +327,7 @@ function ModelHeader(props: { model: PricingModel }) {
               key={tag}
               className='bg-muted text-muted-foreground rounded px-2 py-0.5 text-[11px] font-medium'
             >
-              {tag}
+              {formatModelTagLabel(tag, t)}
             </span>
           ))}
         </div>

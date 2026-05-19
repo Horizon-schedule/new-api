@@ -35,6 +35,7 @@ import {
   getNameRuleConfig,
   getQuotaTypeConfig,
 } from '../constants'
+import { formatModelTagLabel } from '@/lib/model-tag-label'
 import { parseModelTags, formatEndpointsDisplay } from '../lib'
 import type { Model, Vendor } from '../types'
 import { DataTableRowActions } from './data-table-row-actions'
@@ -332,7 +333,12 @@ export function useModelsColumns(vendors: Vendor[] = []): ColumnDef<Model>[] {
         }
 
         const tagBadges = tagArray.map((tag, idx) => (
-          <StatusBadge key={idx} label={tag} autoColor={tag} size='sm' />
+          <StatusBadge
+            key={idx}
+            label={formatModelTagLabel(tag, t)}
+            autoColor={tag}
+            size='sm'
+          />
         ))
 
         return (

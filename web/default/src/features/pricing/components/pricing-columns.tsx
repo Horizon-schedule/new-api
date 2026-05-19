@@ -32,6 +32,7 @@ import {
   getDynamicDisplayGroupRatio,
   getDynamicPricingSummary,
 } from '../lib/dynamic-price'
+import { formatModelTagLabel } from '@/lib/model-tag-label'
 import { parseTags } from '../lib/filters'
 import { isTokenBasedModel } from '../lib/model-helpers'
 import {
@@ -54,12 +55,15 @@ export interface PricingColumnsOptions {
 
 function renderLimitedTags(
   items: string[],
-  maxDisplay: number = 3
+  maxDisplay: number = 3,
+  formatLabel?: (item: string) => string
 ): React.ReactNode {
   if (items.length === 0)
     return <span className='text-muted-foreground/50 text-xs'>—</span>
 
-  const displayed = items.slice(0, maxDisplay)
+  const displayed = items
+    .slice(0, maxDisplay)
+    .map((item) => (formatLabel ? formatLabel(item) : item))
   const remaining = items.length - maxDisplay
 
   return (
@@ -390,11 +394,15 @@ export function usePricingColumns(
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger render={<div />}>
-                {renderLimitedTags(tags, 2)}
+                {renderLimitedTags(tags, 2, (tag) =>
+                  formatModelTagLabel(tag, t)
+                )}
               </TooltipTrigger>
               {tags.length > 2 && (
                 <TooltipContent side='top' className='max-w-[280px] p-2'>
-                  <span className='text-xs'>{tags.join(', ')}</span>
+                  <span className='text-xs'>
+                    {tags.map((tag) => formatModelTagLabel(tag, t)).join(', ')}
+                  </span>
                 </TooltipContent>
               )}
             </Tooltip>

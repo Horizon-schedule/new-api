@@ -121,11 +121,11 @@ export function SidebarModulesSection({
     },
     admin: {
       channel: {
-        title: t('Channels'),
+        title: t('Channel Management'),
         description: t('Configure upstream providers and routing.'),
       },
       models: {
-        title: t('Models'),
+        title: t('Model Management'),
         description: t('Manage catalog visibility and pricing.'),
       },
       redemption: {
