@@ -60,18 +60,20 @@ export function SystemBrand(props: SystemBrandProps) {
         to='/'
         aria-label={t('Go to home')}
         className={cn(
-          'text-foreground inline-flex h-7 items-center gap-1.5 rounded-md px-1.5 text-sm font-medium transition-colors outline-none select-none',
+          'text-foreground inline-flex h-10 items-center gap-2.5 rounded-lg px-2 text-sm font-medium transition-colors outline-none select-none sm:h-11',
           'hover:bg-accent focus-visible:ring-ring/40 focus-visible:ring-2'
         )}
       >
-        <div className='flex size-5 items-center justify-center overflow-hidden rounded-md'>
+        <div className='bg-background ring-border/50 flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm ring-1 sm:size-10'>
           <img
             src={logo}
             alt={t('Logo')}
-            className='size-full rounded-md object-cover'
+            className='size-full rounded-xl object-contain p-0.5'
           />
         </div>
-        <span className='max-w-[12rem] truncate'>{name}</span>
+        <span className='max-w-[12rem] truncate text-sm font-semibold sm:text-base'>
+          {name}
+        </span>
       </Link>
     )
   }
@@ -84,11 +86,11 @@ export function SystemBrand(props: SystemBrandProps) {
           className='hover:text-sidebar-foreground active:text-sidebar-foreground cursor-default hover:bg-transparent active:bg-transparent'
           render={<div />}
         >
-          <div className='flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg'>
+          <div className='bg-background ring-border/40 flex aspect-square size-10 items-center justify-center overflow-hidden rounded-xl shadow-sm ring-1'>
             <img
               src={logo}
               alt={t('Logo')}
-              className='size-full rounded-lg object-cover'
+              className='size-full rounded-xl object-contain p-0.5'
             />
           </div>
           <div className='grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden'>

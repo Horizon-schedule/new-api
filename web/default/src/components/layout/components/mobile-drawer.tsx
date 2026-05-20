@@ -56,9 +56,9 @@ function BrandLogo({
       className='flex items-center gap-2 text-xl font-bold'
       onClick={onClick}
     >
-      <div className='relative h-6 w-6'>
+      <div className='bg-background ring-border/50 relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm ring-1'>
         {loading || !logoLoaded ? (
-          <Skeleton className='absolute inset-0 rounded-full' />
+          <Skeleton className='absolute inset-0 rounded-xl' />
         ) : null}
         {displayLogo}
       </div>

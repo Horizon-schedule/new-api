@@ -192,18 +192,18 @@ export function PublicHeader(props: PublicHeaderProps) {
             className={cn(
               'flex items-center justify-between transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]',
               scrolled
-                ? 'bg-background/60 ring-border/50 h-12 rounded-2xl pr-1.5 pl-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(0,0,0,0.02)] ring-[0.5px] backdrop-blur-2xl dark:shadow-[0_2px_16px_-6px_rgba(0,0,0,0.4)]'
-                : 'h-16 px-2'
+                ? 'bg-background/60 ring-border/50 h-14 rounded-2xl pr-2 pl-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(0,0,0,0.02)] ring-[0.5px] backdrop-blur-2xl dark:shadow-[0_2px_16px_-6px_rgba(0,0,0,0.4)]'
+                : 'h-[4.25rem] px-2 md:h-[4.5rem] md:px-3'
             )}
           >
             {/* Logo */}
             <Link
               to={homeUrl}
-              className='group flex shrink-0 items-center gap-2.5'
+              className='group flex shrink-0 items-center gap-3'
             >
-              <div className='flex size-7 shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-105'>
+              <div className='bg-background ring-border/50 flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-sm ring-1 transition-all duration-300 group-hover:scale-[1.02] sm:size-14'>
                 {loading ? (
-                  <Skeleton className='size-full rounded-lg' />
+                  <Skeleton className='size-full rounded-2xl' />
                 ) : customLogo ? (
                   customLogo
                 ) : (
@@ -211,12 +211,12 @@ export function PublicHeader(props: PublicHeaderProps) {
                     src={systemLogo}
                     loading={loading}
                     logoLoaded={logoLoaded}
-                    className='size-full rounded-lg object-contain'
+                    className='size-full rounded-2xl object-contain p-0.5'
                   />
                 )}
               </div>
-              <span className='text-sm font-semibold tracking-tight'>
-                {loading ? <Skeleton className='h-4 w-16' /> : displaySiteName}
+              <span className='text-base font-semibold tracking-tight sm:text-lg'>
+                {loading ? <Skeleton className='h-5 w-20' /> : displaySiteName}
               </span>
             </Link>
 
