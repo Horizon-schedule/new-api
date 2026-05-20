@@ -22,6 +22,8 @@
   "Referral reward transfer is disabled until the administrator confirms compliance terms.": "Referral reward transfer is disabled until the administrator confirms compliance terms.",
   "Subscription plan creation and changes are locked until the administrator confirms compliance terms in Payment Gateway settings.": "Subscription plan creation and changes are locked until the administrator confirms compliance terms in Payment Gateway settings.",
   "And more providers": "And more providers",
+  "Group and model pricing settings": "Group and model pricing settings",
+  "Only models missing base price or ratio are listed. After you set pricing, they leave this list automatically.": "Only models missing base price or ratio are listed. After you set pricing, they leave this list automatically.",
   "The entered text does not match the required text.": "The entered text does not match the required text.",
   "This confirmation unlocks payment, redemption code, subscription plan, and invitation reward features. Please read the statements carefully.": "This confirmation unlocks payment, redemption code, subscription plan, and invitation reward features. Please read the statements carefully.",
   "Type the confirmation text here": "Type the confirmation text here",

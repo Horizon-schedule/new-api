@@ -17,14 +17,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { type TFunction } from 'i18next'
-import {
-  getSystemSettingsNavGroups,
-  WORKSPACE_SYSTEM_SETTINGS_ID,
-} from '../config/system-settings.config'
 import type { NavGroup } from '../types'
 
 export const WORKSPACE_IDS = {
-  SYSTEM_SETTINGS: WORKSPACE_SYSTEM_SETTINGS_ID,
   DEFAULT: 'default',
 } as const
 
@@ -60,13 +55,6 @@ export type WorkspaceConfig = {
  * }
  */
 const workspaceRegistry: WorkspaceConfig[] = [
-  // System Settings workspace
-  {
-    id: WORKSPACE_IDS.SYSTEM_SETTINGS,
-    name: 'System Settings',
-    pathPattern: /^\/system-settings/,
-    getNavGroups: getSystemSettingsNavGroups,
-  },
   // Default workspace (must be last)
   {
     id: WORKSPACE_IDS.DEFAULT,

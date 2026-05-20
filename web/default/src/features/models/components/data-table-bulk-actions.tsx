@@ -19,7 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
-import { Power, PowerOff, Trash2, Copy } from 'lucide-react'
+import { Power, PowerOff, Trash2, Copy, ListPlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/lib/copy-to-clipboard'
@@ -44,6 +44,7 @@ import {
   handleBatchDeleteModels,
 } from '../lib'
 import type { Model } from '../types'
+import { useModels } from './models-provider'
 
 interface DataTableBulkActionsProps<TData> {
   table: Table<TData>
@@ -54,6 +55,7 @@ export function DataTableBulkActions<TData>({
 }: DataTableBulkActionsProps<TData>) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  const { openPrefillGroupManagement } = useModels()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
@@ -96,6 +98,18 @@ export function DataTableBulkActions<TData>({
     } else {
       toast.error(t('Failed to copy model names'))
     }
+  }
+
+  const handleAddToPrefillGroup = () => {
+    const items = selectedModels
+      .map((model) => model.model_name?.trim())
+      .filter((name): name is string => Boolean(name))
+    if (items.length === 0) {
+      toast.error(t('No model names selected'))
+      return
+    }
+    openPrefillGroupManagement({ type: 'model', items })
+    handleClearSelection()
   }
 
   return (
@@ -161,6 +175,27 @@ export function DataTableBulkActions<TData>({
           </TooltipTrigger>
           <TooltipContent>
             <p>{t('Copy model names')}</p>
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant='outline'
+                size='icon'
+                onClick={handleAddToPrefillGroup}
+                className='size-8'
+                aria-label={t('Add to prefill group')}
+                title={t('Add to prefill group')}
+              />
+            }
+          >
+            <ListPlus />
+            <span className='sr-only'>{t('Add to prefill group')}</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{t('Add to prefill group')}</p>
           </TooltipContent>
         </Tooltip>
 

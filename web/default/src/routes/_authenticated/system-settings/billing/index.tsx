@@ -16,16 +16,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { BILLING_DEFAULT_SECTION } from '@/features/system-settings/billing/section-registry.tsx'
+import { createFileRoute } from '@tanstack/react-router'
+import { redirectLegacySettingsSection } from '@/features/system-settings/legacy-redirect'
 
 export const Route = createFileRoute(
   '/_authenticated/system-settings/billing/'
 )({
   beforeLoad: () => {
-    throw redirect({
-      to: '/system-settings/billing/$section',
-      params: { section: BILLING_DEFAULT_SECTION },
-    })
+    redirectLegacySettingsSection('billing', 'quota')
   },
 })

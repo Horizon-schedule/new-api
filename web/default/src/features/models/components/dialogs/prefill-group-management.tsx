@@ -19,6 +19,8 @@ For commercial licensing, please contact support@quantumnous.com
 import { useEffect, useState } from 'react'
 import type { PrefillGroup } from '../../types'
 import { PrefillGroupFormDrawer } from '../drawers/prefill-group-form-drawer'
+import type { PrefillCreateDraft } from '../models-provider'
+import { useModels } from '../models-provider'
 import { PrefillGroupManagementDialog } from './prefill-group-management-dialog'
 
 type PrefillGroupManagementProps = {
@@ -32,8 +34,16 @@ export function PrefillGroupManagement({
   open,
   onOpenChange,
 }: PrefillGroupManagementProps) {
+  const { prefillCreateDraft, setPrefillCreateDraft } = useModels()
   const [view, setView] = useState<PrefillView>('dialog')
   const [currentGroup, setCurrentGroup] = useState<PrefillGroup | null>(null)
+
+  useEffect(() => {
+    if (open && prefillCreateDraft) {
+      setCurrentGroup(null)
+      setView('drawer')
+    }
+  }, [open, prefillCreateDraft])
 
   useEffect(() => {
     if (!open) {
@@ -41,8 +51,9 @@ export function PrefillGroupManagement({
       setView('dialog')
 
       setCurrentGroup(null)
+      setPrefillCreateDraft(null)
     }
-  }, [open])
+  }, [open, setPrefillCreateDraft])
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
@@ -74,6 +85,7 @@ export function PrefillGroupManagement({
         open={open && view === 'drawer'}
         onClose={handleDrawerClose}
         currentGroup={currentGroup}
+        createDraft={prefillCreateDraft}
       />
     </>
   )

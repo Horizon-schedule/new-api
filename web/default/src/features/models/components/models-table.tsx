@@ -38,13 +38,15 @@ import {
 import { modelsQueryKeys, vendorsQueryKeys } from '../lib'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { useModelsColumns } from './models-columns'
+import { ModelsVendorTabs } from './models-vendor-tabs'
 import { useModels } from './models-provider'
 
 const route = getRouteApi('/_authenticated/models/$section')
 
 export function ModelsTable() {
   const { t } = useTranslation()
-  const { selectedVendor } = useModels()
+  const { selectedVendor, setSelectedVendor } = useModels()
+  const navigate = route.useNavigate()
   const isMobile = useMediaQuery('(max-width: 640px)')
 
   // Table state
@@ -219,8 +221,33 @@ export function ModelsTable() {
     })),
   ]
 
+  const activeVendorKey =
+    vendorFilter.length > 0 && !vendorFilter.includes('all')
+      ? vendorFilter[0]
+      : selectedVendor && selectedVendor !== 'all'
+        ? selectedVendor
+        : 'all'
+
+  const handleVendorTabChange = (vendorKey: string) => {
+    setSelectedVendor(vendorKey === 'all' ? null : vendorKey)
+    void navigate({
+      search: (prev) => ({
+        ...prev,
+        page: 1,
+        vendor: vendorKey === 'all' ? [] : [vendorKey],
+      }),
+    })
+  }
+
   return (
-    <DataTablePage
+    <div className='flex min-h-0 flex-1 flex-col gap-3'>
+      <ModelsVendorTabs
+        vendors={vendors}
+        vendorCounts={vendorCounts}
+        activeVendorKey={activeVendorKey}
+        onVendorChange={handleVendorTabChange}
+      />
+      <DataTablePage
       table={table}
       columns={columns}
       isLoading={isLoading}
@@ -258,5 +285,6 @@ export function ModelsTable() {
       }}
       bulkActions={<DataTableBulkActions table={table} />}
     />
+    </div>
   )
 }

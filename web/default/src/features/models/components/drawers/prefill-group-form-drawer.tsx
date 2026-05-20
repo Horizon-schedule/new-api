@@ -64,6 +64,7 @@ import {
   type PrefillGroup,
   type PrefillGroupFormValues,
 } from '../../types'
+import type { PrefillCreateDraft } from '../models-provider'
 import {
   DEFAULT_FORM_VALUES,
   PREFILL_GROUP_TYPE_META,
@@ -77,12 +78,14 @@ type PrefillGroupFormDrawerProps = {
   open: boolean
   onClose: () => void
   currentGroup: PrefillGroup | null
+  createDraft?: PrefillCreateDraft | null
 }
 
 export function PrefillGroupFormDrawer({
   open,
   onClose,
   currentGroup,
+  createDraft,
 }: PrefillGroupFormDrawerProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -109,11 +112,20 @@ export function PrefillGroupFormDrawer({
               ? serializeEndpointItems(currentGroup.items)
               : parseStringItems(currentGroup.items),
         })
+      } else if (createDraft) {
+        form.reset({
+          ...DEFAULT_FORM_VALUES,
+          type: createDraft.type,
+          items:
+            createDraft.type === 'endpoint'
+              ? serializeEndpointItems(createDraft.items)
+              : createDraft.items,
+        })
       } else {
         form.reset(DEFAULT_FORM_VALUES)
       }
     }
-  }, [open, isEdit, currentGroup, form])
+  }, [open, isEdit, currentGroup, createDraft, form])
 
   useEffect(() => {
     const currentItems = form.getValues('items')

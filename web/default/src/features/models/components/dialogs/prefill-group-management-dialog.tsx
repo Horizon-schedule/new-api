@@ -196,7 +196,7 @@ export function PrefillGroupManagementDialog({
                 </DialogTitle>
                 <DialogDescription className='text-base leading-relaxed sm:text-sm'>
                   {t(
-                    'Create reusable bundles of models, tags, endpoints, and user groups to speed up configuration elsewhere in the console.'
+                    'Manage preset groups for models, tags, endpoints, and more'
                   )}
                 </DialogDescription>
               </DialogHeader>

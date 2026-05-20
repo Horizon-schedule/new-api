@@ -54,6 +54,10 @@ type ModelRatioFormProps = {
   onReset: () => void
   isSaving: boolean
   isResetting: boolean
+  onlyUnsetModels?: boolean
+  enabledModelNames?: string[]
+  hideExposeRatio?: boolean
+  hideResetButton?: boolean
 }
 
 export const ModelRatioForm = memo(function ModelRatioForm({
@@ -62,6 +66,10 @@ export const ModelRatioForm = memo(function ModelRatioForm({
   onReset,
   isSaving,
   isResetting,
+  onlyUnsetModels = false,
+  enabledModelNames,
+  hideExposeRatio = false,
+  hideResetButton = false,
 }: ModelRatioFormProps) {
   const { t } = useTranslation()
   const [editMode, setEditMode] = useState<'visual' | 'json'>('visual')
@@ -112,6 +120,8 @@ export const ModelRatioForm = memo(function ModelRatioForm({
               audioCompletionRatio={form.watch('AudioCompletionRatio')}
               billingMode={form.watch('BillingMode')}
               billingExpr={form.watch('BillingExpr')}
+              onlyUnsetModels={onlyUnsetModels}
+              enabledModelNames={enabledModelNames}
               onChange={(field, value) => {
                 const fieldMap: Record<string, keyof ModelFormValues> = {
                   'billing_setting.billing_mode': 'BillingMode',
@@ -123,43 +133,47 @@ export const ModelRatioForm = memo(function ModelRatioForm({
               }}
             />
 
-            <FormField
-              control={form.control}
-              name='ExposeRatioEnabled'
-              render={({ field }) => (
-                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
-                  <div className='space-y-0.5'>
-                    <FormLabel className='text-base'>
-                      {t('Expose ratio API')}
-                    </FormLabel>
-                    <FormDescription>
-                      {t(
-                        'Allow clients to query configured ratios via `/api/ratio`.'
-                      )}
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            {!hideExposeRatio ? (
+              <FormField
+                control={form.control}
+                name='ExposeRatioEnabled'
+                render={({ field }) => (
+                  <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                    <div className='space-y-0.5'>
+                      <FormLabel className='text-base'>
+                        {t('Expose ratio API')}
+                      </FormLabel>
+                      <FormDescription>
+                        {t(
+                          'Allow clients to query configured ratios via `/api/ratio`.'
+                        )}
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            ) : null}
 
             <div className='flex flex-wrap gap-4'>
               <Button onClick={form.handleSubmit(onSave)} disabled={isSaving}>
                 {isSaving ? t('Saving...') : t('Save model prices')}
               </Button>
-              <Button
-                type='button'
-                variant='destructive'
-                onClick={onReset}
-                disabled={isResetting}
-              >
-                {t('Reset prices')}
-              </Button>
+              {!hideResetButton ? (
+                <Button
+                  type='button'
+                  variant='destructive'
+                  onClick={onReset}
+                  disabled={isResetting}
+                >
+                  {t('Reset prices')}
+                </Button>
+              ) : null}
             </div>
           </div>
         ) : (

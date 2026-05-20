@@ -78,6 +78,10 @@ type ModelRatioVisualEditorProps = {
   billingMode: string
   billingExpr: string
   onChange: (field: string, value: string) => void
+  /** When set, only show models missing base price/ratio (classic unset tab) */
+  onlyUnsetModels?: boolean
+  /** Enabled channel models used to discover unset pricing entries */
+  enabledModelNames?: string[]
 }
 
 type ModelRow = {
@@ -99,6 +103,23 @@ type ModelRow = {
 const STORAGE_KEY = 'model-ratio-column-visibility'
 
 const hasValue = (value?: string) => value !== undefined && value !== ''
+
+const isBasePricingUnset = (row: ModelRow) =>
+  row.billingMode !== 'tiered_expr' && !hasValue(row.price) && !hasValue(row.ratio)
+
+const createEmptyModelRow = (name: string): ModelRow => ({
+  name,
+  price: '',
+  ratio: '',
+  cacheRatio: '',
+  createCacheRatio: '',
+  completionRatio: '',
+  imageRatio: '',
+  audioRatio: '',
+  audioCompletionRatio: '',
+  billingMode: 'per-token',
+  hasConflict: false,
+})
 
 const toNumberOrNull = (value?: string) => {
   if (!hasValue(value)) return null
@@ -208,6 +229,8 @@ export const ModelRatioVisualEditor = memo(
     billingMode,
     billingExpr,
     onChange,
+    onlyUnsetModels = false,
+    enabledModelNames,
   }: ModelRatioVisualEditorProps) {
     const { t } = useTranslation()
     const isMobile = useMediaQuery('(max-width: 767px)')
@@ -380,7 +403,23 @@ export const ModelRatioVisualEditor = memo(
         }
       })
 
-      return modelData.sort((a, b) => a.name.localeCompare(b.name))
+      let rows = modelData
+
+      if (enabledModelNames?.length) {
+        const rowMap = new Map(rows.map((row) => [row.name, row]))
+        for (const name of enabledModelNames) {
+          if (!rowMap.has(name)) {
+            rowMap.set(name, createEmptyModelRow(name))
+          }
+        }
+        rows = Array.from(rowMap.values())
+      }
+
+      if (onlyUnsetModels) {
+        rows = rows.filter(isBasePricingUnset)
+      }
+
+      return rows.sort((a, b) => a.name.localeCompare(b.name))
     }, [
       modelPrice,
       modelRatio,
@@ -392,6 +431,8 @@ export const ModelRatioVisualEditor = memo(
       audioCompletionRatio,
       billingMode,
       billingExpr,
+      onlyUnsetModels,
+      enabledModelNames,
     ])
 
     const modeCounts = useMemo(

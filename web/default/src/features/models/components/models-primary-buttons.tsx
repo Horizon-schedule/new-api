@@ -38,7 +38,7 @@ import { useModels } from './models-provider'
 
 export function ModelsPrimaryButtons() {
   const { t } = useTranslation()
-  const { setOpen, setCurrentRow } = useModels()
+  const { setOpen, setCurrentRow, openPrefillGroupManagement } = useModels()
 
   const handleCreateModel = () => {
     setCurrentRow(null)
@@ -53,28 +53,57 @@ export function ModelsPrimaryButtons() {
     setOpen('sync-wizard')
   }
 
-  const handlePrefillGroups = () => {
-    setOpen('prefill-groups')
-  }
-
   const handleManageVendors = () => {
-    setOpen('create-vendor') // Will be a separate vendors management dialog
+    setCurrentRow(null)
+    setOpen('create-vendor')
   }
 
   return (
-    <div className='flex items-center gap-2'>
-      {/* Create Model */}
+    <div className='flex flex-wrap items-center gap-2'>
       <Button onClick={handleCreateModel} size='sm'>
         <Plus className='h-4 w-4' />
         {t('Add Model')}
       </Button>
 
-      {/* More Actions */}
+      <Button variant='outline' size='sm' onClick={handleMissingModels}>
+        {t('Missing Models')}
+      </Button>
+
+      <Button variant='outline' size='sm' onClick={handleSync}>
+        <RefreshCw className='h-4 w-4' />
+        {t('Sync Upstream')}
+      </Button>
+
+      <Button
+        variant='outline'
+        size='sm'
+        onClick={() => openPrefillGroupManagement()}
+      >
+        <List className='h-4 w-4' />
+        {t('Prefill Group Management')}
+      </Button>
+
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant='outline' size='sm' />}>
           <MoreHorizontal className='h-4 w-4' />
         </DropdownMenuTrigger>
         <DropdownMenuContent align='end' className='w-56'>
+          <DropdownMenuItem onClick={() => openPrefillGroupManagement()}>
+            {t('Prefill Group Management')}
+            <DropdownMenuShortcut>
+              <List className='h-4 w-4' />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={handleManageVendors}>
+            {t('Manage Vendors')}
+            <DropdownMenuShortcut>
+              <Building2 className='h-4 w-4' />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem onClick={handleMissingModels}>
             {t('Missing Models')}
             <DropdownMenuShortcut>
@@ -86,22 +115,6 @@ export function ModelsPrimaryButtons() {
             {t('Sync Upstream')}
             <DropdownMenuShortcut>
               <RefreshCw className='h-4 w-4' />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem onClick={handlePrefillGroups}>
-            {t('Prefill Groups')}
-            <DropdownMenuShortcut>
-              <List className='h-4 w-4' />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem onClick={handleManageVendors}>
-            {t('Manage Vendors')}
-            <DropdownMenuShortcut>
-              <Building2 className='h-4 w-4' />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>

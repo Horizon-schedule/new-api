@@ -17,6 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { getEnabledModels } from '@/features/channels/api'
 import * as z from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -197,7 +199,12 @@ const groupSchema = z.object({
 
 type ModelFormValues = z.infer<typeof modelSchema>
 type GroupFormValues = z.infer<typeof groupSchema>
-type RatioTabId = 'models' | 'groups' | 'tool-prices' | 'upstream-sync'
+type RatioTabId =
+  | 'models'
+  | 'groups'
+  | 'unset-models'
+  | 'tool-prices'
+  | 'upstream-sync'
 
 type RatioSettingsCardProps = {
   modelDefaults: ModelFormValues
@@ -439,9 +446,17 @@ export function RatioSettingsCard({
     resetMutate()
   }, [resetMutate])
 
+  const { data: enabledModelsResponse } = useQuery({
+    queryKey: ['channel-enabled-models'],
+    queryFn: getEnabledModels,
+    staleTime: 60_000,
+  })
+  const enabledModelNames = enabledModelsResponse?.data ?? []
+
   const tabLabels: Record<RatioTabId, string> = {
     models: 'Model prices',
     groups: 'Group ratios',
+    'unset-models': 'Models without pricing',
     'tool-prices': 'Tool prices',
     'upstream-sync': 'Upstream price sync',
   }
@@ -451,7 +466,8 @@ export function RatioSettingsCard({
       2: 'grid-cols-2',
       3: 'grid-cols-3',
       4: 'grid-cols-4',
-    }[visibleTabs.length] ?? 'grid-cols-4'
+      5: 'grid-cols-5',
+    }[visibleTabs.length] ?? 'grid-cols-5'
   const defaultTab = visibleTabs[0] ?? 'models'
 
   const renderTabContent = (tab: RatioTabId) => {
@@ -473,6 +489,28 @@ export function RatioSettingsCard({
           onSave={saveGroupRatios}
           isSaving={updateOption.isPending}
         />
+      )
+    }
+    if (tab === 'unset-models') {
+      return (
+        <div className='space-y-4'>
+          <p className='text-muted-foreground text-sm'>
+            {t(
+              'Only models missing base price or ratio are listed. After you set pricing, they leave this list automatically.'
+            )}
+          </p>
+          <ModelRatioForm
+            form={modelForm}
+            onSave={saveModelRatios}
+            onReset={handleResetRatios}
+            isSaving={updateOption.isPending}
+            isResetting={resetMutation.isPending}
+            onlyUnsetModels
+            enabledModelNames={enabledModelNames}
+            hideExposeRatio
+            hideResetButton
+          />
+        </div>
       )
     }
     if (tab === 'tool-prices') {

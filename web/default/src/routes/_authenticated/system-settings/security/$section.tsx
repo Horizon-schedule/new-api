@@ -16,24 +16,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { SecuritySettings } from '@/features/system-settings/security'
-import {
-  SECURITY_DEFAULT_SECTION,
-  SECURITY_SECTION_IDS,
-} from '@/features/system-settings/security/section-registry.tsx'
+import { createFileRoute } from '@tanstack/react-router'
+import { redirectLegacySettingsSection } from '@/features/system-settings/legacy-redirect'
 
 export const Route = createFileRoute(
   '/_authenticated/system-settings/security/$section'
 )({
   beforeLoad: ({ params }) => {
-    const validSections = SECURITY_SECTION_IDS as unknown as string[]
-    if (!validSections.includes(params.section)) {
-      throw redirect({
-        to: '/system-settings/security/$section',
-        params: { section: SECURITY_DEFAULT_SECTION },
-      })
-    }
+    redirectLegacySettingsSection('security', params.section)
   },
-  component: SecuritySettings,
 })

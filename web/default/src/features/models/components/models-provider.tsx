@@ -21,11 +21,17 @@ import React, { createContext, useContext, useState } from 'react'
 import type {
   Model,
   ModelTabCategory,
+  PrefillGroup,
   Vendor,
   SyncDiffData,
   SyncLocale,
   SyncSource,
 } from '../types'
+
+export type PrefillCreateDraft = {
+  type: PrefillGroup['type']
+  items: string[]
+}
 
 // ============================================================================
 // Types
@@ -64,6 +70,9 @@ type ModelsContextType = {
   >
   tabCategory: ModelTabCategory
   setTabCategory: (category: ModelTabCategory) => void
+  prefillCreateDraft: PrefillCreateDraft | null
+  setPrefillCreateDraft: (draft: PrefillCreateDraft | null) => void
+  openPrefillGroupManagement: (draft?: PrefillCreateDraft | null) => void
 }
 
 // ============================================================================
@@ -96,6 +105,13 @@ export function ModelsProvider({ children }: { children: React.ReactNode }) {
     source: 'official',
   })
   const [tabCategory, setTabCategory] = useState<ModelTabCategory>('metadata')
+  const [prefillCreateDraft, setPrefillCreateDraft] =
+    useState<PrefillCreateDraft | null>(null)
+
+  const openPrefillGroupManagement = (draft?: PrefillCreateDraft | null) => {
+    setPrefillCreateDraft(draft ?? null)
+    setOpen('prefill-groups')
+  }
 
   return (
     <ModelsContext.Provider
@@ -116,6 +132,9 @@ export function ModelsProvider({ children }: { children: React.ReactNode }) {
         setSyncWizardOptions,
         tabCategory,
         setTabCategory,
+        prefillCreateDraft,
+        setPrefillCreateDraft,
+        openPrefillGroupManagement,
       }}
     >
       {children}

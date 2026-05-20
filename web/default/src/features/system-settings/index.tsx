@@ -16,14 +16,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Outlet } from '@tanstack/react-router'
 import { Main } from '@/components/layout'
+import { SettingsShell } from './components/settings-shell'
 
 export function SystemSettings() {
   return (
     <Main>
-      <div className='min-h-0 flex-1 px-4 pt-6 pb-4'>
-        <Outlet />
+      <div className='flex min-h-0 flex-1 flex-col px-4 pt-6 pb-4'>
+        <SettingsShell />
       </div>
     </Main>
   )

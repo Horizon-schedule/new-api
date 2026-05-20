@@ -41,6 +41,7 @@ const behaviorSchema = z.object({
   DefaultCollapseSidebar: z.boolean(),
   DemoSiteEnabled: z.boolean(),
   SelfUseModeEnabled: z.boolean(),
+  'token_setting.max_user_tokens': z.coerce.number().min(1),
 })
 
 type BehaviorFormValues = z.infer<typeof behaviorSchema>
@@ -170,6 +171,33 @@ export function SystemBehaviorSection({
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='token_setting.max_user_tokens'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('Max tokens per user')}</FormLabel>
+                <FormControl>
+                  <Input
+                    type='number'
+                    min={1}
+                    value={field.value as number}
+                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {t(
+                    'Maximum number of API tokens each user can create. Default is 1000; very large values may affect performance.'
+                  )}
+                </FormDescription>
+                <FormMessage />
               </FormItem>
             )}
           />

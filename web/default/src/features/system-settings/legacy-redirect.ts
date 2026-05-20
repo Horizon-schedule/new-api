@@ -16,11 +16,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute } from '@tanstack/react-router'
-import { redirectLegacySettingsSection } from '@/features/system-settings/legacy-redirect'
+import { redirect } from '@tanstack/react-router'
+import {
+  LEGACY_SECTION_TO_TAB,
+  resolveLegacySettingsPath,
+} from './tab-content-registry'
+import { SETTINGS_DEFAULT_TAB } from './settings-tabs.config'
 
-export const Route = createFileRoute('/_authenticated/system-settings/auth/')({
-  beforeLoad: () => {
-    redirectLegacySettingsSection('auth', 'basic-auth')
-  },
-})
+export function redirectLegacySettingsSection(
+  category: string,
+  section: string
+) {
+  const tab =
+    LEGACY_SECTION_TO_TAB[`${category}/${section}`] ?? SETTINGS_DEFAULT_TAB
+  throw redirect({
+    to: '/system-settings/$tab',
+    params: { tab },
+  })
+}
+
+export function redirectLegacySettingsPathname(pathname: string) {
+  const tab = resolveLegacySettingsPath(pathname) ?? SETTINGS_DEFAULT_TAB
+  throw redirect({
+    to: '/system-settings/$tab',
+    params: { tab },
+  })
+}
