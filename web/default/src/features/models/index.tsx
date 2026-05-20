@@ -124,7 +124,7 @@ function ModelsContent() {
 
   return (
     <>
-      <SectionPageLayout>
+      <SectionPageLayout fillContent>
         <SectionPageLayout.Title>{t(meta.titleKey)}</SectionPageLayout.Title>
         <SectionPageLayout.Description>
           {t(meta.descriptionKey)}
@@ -140,9 +140,9 @@ function ModelsContent() {
           )}
         </SectionPageLayout.Actions>
         <SectionPageLayout.Content>
-          <div className='space-y-4'>
+          <div className='flex min-h-0 flex-1 flex-col gap-4'>
             <Tabs value={activeSection} onValueChange={handleSectionChange}>
-              <TabsList className='h-auto max-w-full flex-wrap justify-start'>
+              <TabsList className='h-auto max-w-full shrink-0 flex-wrap justify-start'>
                 {MODELS_SECTION_IDS.map((section) => (
                   <TabsTrigger key={section} value={section}>
                     {t(SECTION_META[section].titleKey)}
@@ -150,6 +150,7 @@ function ModelsContent() {
                 ))}
               </TabsList>
             </Tabs>
+            <div className='flex min-h-0 flex-1 flex-col'>
             {activeSection === 'metadata' ? (
               <ModelsTable />
             ) : (
@@ -165,6 +166,7 @@ function ModelsContent() {
                 <DeploymentsTable />
               </DeploymentAccessGuard>
             )}
+            </div>
           </div>
         </SectionPageLayout.Content>
       </SectionPageLayout>

@@ -21,17 +21,43 @@ For commercial licensing, please contact support@quantumnous.com
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-function Table({ className, ...props }: React.ComponentProps<'table'>) {
+type TableProps = React.ComponentProps<'table'> & {
+  /** Skip the default overflow-x wrapper (used with an external sticky scrollbar). */
+  disableContainerScroll?: boolean
+  containerClassName?: string
+}
+
+function Table({
+  className,
+  disableContainerScroll = false,
+  containerClassName,
+  ...props
+}: TableProps) {
+  const tableElement = (
+    <table
+      data-slot='table'
+      className={cn('w-full caption-bottom text-sm', className)}
+      {...props}
+    />
+  )
+
+  if (disableContainerScroll) {
+    return (
+      <div
+        data-slot='table-container'
+        className={cn('relative w-full', containerClassName)}
+      >
+        {tableElement}
+      </div>
+    )
+  }
+
   return (
     <div
       data-slot='table-container'
-      className='relative w-full overflow-x-auto'
+      className={cn('relative w-full overflow-x-auto', containerClassName)}
     >
-      <table
-        data-slot='table'
-        className={cn('w-full caption-bottom text-sm', className)}
-        {...props}
-      />
+      {tableElement}
     </div>
   )
 }

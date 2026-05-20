@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import * as React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   flexRender,
   type ColumnDef,
@@ -231,8 +232,19 @@ export function DataTablePage<TData>(props: DataTablePageProps<TData>) {
 
   return (
     <>
-      <div className={cn('space-y-2.5 sm:space-y-3', props.className)}>
-        {toolbarNode}
+      <div
+        className={cn(
+          props.tableViewportScroll
+            ? 'flex min-h-0 flex-1 flex-col gap-2.5 sm:gap-3'
+            : 'space-y-2.5 sm:space-y-3',
+          props.className
+        )}
+      >
+        {toolbarNode ? (
+          <div className={props.tableViewportScroll ? 'shrink-0' : undefined}>
+            {toolbarNode}
+          </div>
+        ) : null}
         {mobileNode}
         {desktopNode}
         {props.afterTable}
@@ -303,27 +315,23 @@ function renderDesktop<TData>(
 ): React.ReactNode {
   if (showMobile) return null
 
+  if (props.tableViewportScroll) {
+    return <ViewportScrollDesktopTable {...props} />
+  }
+
   const rows = props.table.getRowModel().rows
   const isFetchingOnly = props.isFetching && !props.isLoading
 
   return (
     <div
       className={cn(
-        'rounded-lg border transition-opacity duration-150',
-        props.tableViewportScroll
-          ? 'max-h-[calc(100vh-14rem)] overflow-auto'
-          : 'overflow-hidden',
+        'overflow-hidden rounded-lg border transition-opacity duration-150',
         isFetchingOnly && 'pointer-events-none opacity-60',
         props.tableClassName
       )}
     >
       <Table>
-        <TableHeader
-          className={cn(
-            props.tableViewportScroll && 'bg-muted/30 sticky top-0 z-10',
-            props.tableHeaderClassName
-          )}
-        >
+        <TableHeader className={props.tableHeaderClassName}>
           {props.table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
@@ -348,36 +356,154 @@ function renderDesktop<TData>(
           ))}
         </TableHeader>
         <TableBody>
-          {props.isLoading ? (
-            <TableSkeleton
-              table={props.table}
-              keyPrefix={props.skeletonKeyPrefix}
-            />
-          ) : rows.length === 0 ? (
-            <TableEmpty
-              colSpan={props.columns.length}
-              title={props.emptyTitle}
-              description={props.emptyDescription}
-              icon={props.emptyIcon}
-            >
-              {props.emptyAction}
-            </TableEmpty>
-          ) : (
-            rows.map((row) => {
-              if (props.renderRow) {
-                return props.renderRow(row)
-              }
-              return (
-                <DefaultRow
-                  key={row.id}
-                  row={row}
-                  className={props.getRowClassName?.(row, { isMobile: false })}
-                />
-              )
-            })
-          )}
+          {renderTableBody(props, rows)}
         </TableBody>
       </Table>
+    </div>
+  )
+}
+
+function renderTableBody<TData>(
+  props: DataTablePageProps<TData>,
+  rows: Row<TData>[]
+) {
+  if (props.isLoading) {
+    return (
+      <TableSkeleton table={props.table} keyPrefix={props.skeletonKeyPrefix} />
+    )
+  }
+
+  if (rows.length === 0) {
+    return (
+      <TableEmpty
+        colSpan={props.columns.length}
+        title={props.emptyTitle}
+        description={props.emptyDescription}
+        icon={props.emptyIcon}
+      >
+        {props.emptyAction}
+      </TableEmpty>
+    )
+  }
+
+  return rows.map((row) => {
+    if (props.renderRow) {
+      return props.renderRow(row)
+    }
+    return (
+      <DefaultRow
+        key={row.id}
+        row={row}
+        className={props.getRowClassName?.(row, { isMobile: false })}
+      />
+    )
+  })
+}
+
+function ViewportScrollDesktopTable<TData>(
+  props: DataTablePageProps<TData>
+) {
+  const rows = props.table.getRowModel().rows
+  const isFetchingOnly = props.isFetching && !props.isLoading
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const xScrollRef = useRef<HTMLDivElement>(null)
+  const measureRef = useRef<HTMLDivElement>(null)
+  const [scrollLeft, setScrollLeft] = useState(0)
+  const [tableWidth, setTableWidth] = useState(0)
+  const isSyncingRef = useRef(false)
+
+  const updateTableWidth = useCallback(() => {
+    const tableEl = measureRef.current?.querySelector('[data-slot="table"]')
+    if (!tableEl) return
+    setTableWidth(tableEl.scrollWidth)
+  }, [])
+
+  useEffect(() => {
+    updateTableWidth()
+    const target = measureRef.current
+    if (!target) return
+
+    const observer = new ResizeObserver(() => {
+      updateTableWidth()
+    })
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [updateTableWidth, rows.length, props.columns.length, props.isLoading])
+
+  const handleXScroll = useCallback(() => {
+    if (isSyncingRef.current || !xScrollRef.current) return
+    isSyncingRef.current = true
+    setScrollLeft(xScrollRef.current.scrollLeft)
+    requestAnimationFrame(() => {
+      isSyncingRef.current = false
+    })
+  }, [])
+
+  return (
+    <div
+      className={cn(
+        'flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border transition-opacity duration-150',
+        isFetchingOnly && 'pointer-events-none opacity-60',
+        props.tableClassName
+      )}
+    >
+      <div
+        ref={bodyRef}
+        className='min-h-0 flex-1 overflow-x-hidden overflow-y-auto'
+      >
+        <div
+          ref={measureRef}
+          style={{
+            width: tableWidth > 0 ? tableWidth : '100%',
+            transform: `translateX(-${scrollLeft}px)`,
+          }}
+        >
+          <Table disableContainerScroll className='w-max min-w-full'>
+            <TableHeader
+              className={cn(
+                'bg-muted/30 sticky top-0 z-10',
+                props.tableHeaderClassName
+              )}
+            >
+              {props.table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      style={
+                        props.applyHeaderSize
+                          ? { width: header.getSize() }
+                          : undefined
+                      }
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>{renderTableBody(props, rows)}</TableBody>
+          </Table>
+        </div>
+      </div>
+
+      <div
+        ref={xScrollRef}
+        className='bg-background shrink-0 overflow-x-auto overflow-y-hidden border-t'
+        onScroll={handleXScroll}
+        aria-hidden={tableWidth <= 0}
+      >
+        <div
+          className='h-3 sm:h-3.5'
+          style={{ width: tableWidth > 0 ? tableWidth : '100%' }}
+        />
+      </div>
     </div>
   )
 }
