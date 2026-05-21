@@ -274,7 +274,7 @@ export function RatioSettingsCard({
 
   const modelForm = useForm<ModelFormValues>({
     resolver: zodResolver(modelSchema),
-    mode: 'onChange',
+    mode: 'onTouched',
     defaultValues: {
       ...modelDefaults,
       ModelPrice: formatJsonForTextarea(modelDefaults.ModelPrice),
@@ -294,7 +294,7 @@ export function RatioSettingsCard({
 
   const groupForm = useForm<GroupFormValues>({
     resolver: zodResolver(groupSchema),
-    mode: 'onChange',
+    mode: 'onTouched',
     defaultValues: {
       ...groupDefaults,
       GroupRatio: formatJsonForTextarea(groupDefaults.GroupRatio),
@@ -469,6 +469,7 @@ export function RatioSettingsCard({
       5: 'grid-cols-5',
     }[visibleTabs.length] ?? 'grid-cols-5'
   const defaultTab = visibleTabs[0] ?? 'models'
+  const [activeTab, setActiveTab] = useState<RatioTabId>(defaultTab)
 
   const renderTabContent = (tab: RatioTabId) => {
     if (tab === 'models') {
@@ -539,7 +540,11 @@ export function RatioSettingsCard({
       {visibleTabs.length === 1 ? (
         renderTabContent(defaultTab)
       ) : (
-        <Tabs defaultValue={defaultTab} className='space-y-6'>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as RatioTabId)}
+          className='space-y-6'
+        >
           <TabsList className={`grid w-full ${tabsGridClass}`}>
             {visibleTabs.map((tab) => (
               <TabsTrigger key={tab} value={tab}>
@@ -550,7 +555,7 @@ export function RatioSettingsCard({
 
           {visibleTabs.map((tab) => (
             <TabsContent key={tab} value={tab}>
-              {renderTabContent(tab)}
+              {activeTab === tab ? renderTabContent(tab) : null}
             </TabsContent>
           ))}
         </Tabs>

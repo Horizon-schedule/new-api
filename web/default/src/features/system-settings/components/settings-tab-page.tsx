@@ -50,7 +50,9 @@ export function SettingsTabPage() {
 
   return (
     <div className='faded-bottom min-h-0 overflow-y-auto scroll-smooth pb-12'>
-      <div className='space-y-4'>{content}</div>
+      <div key={tabId} className='space-y-4'>
+        {content}
+      </div>
     </div>
   )
 }

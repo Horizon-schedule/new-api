@@ -52,7 +52,6 @@ const _systemInfoSchema = z.object({
     frontend: z.enum(['default', 'classic']),
   }),
   SystemName: z.string().min(1),
-  ServerAddress: z.string().optional(),
   Logo: z.string().url().optional().or(z.literal('')),
   Footer: z.string().optional(),
   About: z.string().optional(),
@@ -84,7 +83,6 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
         defaultValues.theme?.frontend === 'classic' ? 'classic' : 'default',
     },
     SystemName: normalizeValue(defaultValues.SystemName),
-    ServerAddress: normalizeValue(defaultValues.ServerAddress),
     Logo: normalizeValue(defaultValues.Logo),
     Footer: normalizeValue(defaultValues.Footer),
     About: normalizeValue(defaultValues.About),
@@ -102,7 +100,6 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
     SystemName: z.string().min(1, {
       error: () => t('System name is required'),
     }),
-    ServerAddress: z.string().optional(),
     Logo: z.string().url().optional().or(z.literal('')),
     Footer: z.string().optional(),
     About: z.string().optional(),
@@ -123,10 +120,7 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
       defaultValues: normalizedDefaults,
       onSubmit: async (_data, changedFields) => {
         for (const [key, value] of Object.entries(changedFields)) {
-          let v = normalizeValue(value)
-          if (key === 'ServerAddress') {
-            v = v.replace(/\/+$/, '')
-          }
+          const v = normalizeValue(value)
           await updateOption.mutateAsync({
             key,
             value: v,
@@ -200,25 +194,6 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
                   </FormControl>
                   <FormDescription>
                     {t('The name displayed across the application')}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='ServerAddress'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('Server Address')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder='https://yourdomain.com' {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    {t(
-                      'The public URL of your server, used for OAuth callbacks, webhooks, and other external integrations'
-                    )}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

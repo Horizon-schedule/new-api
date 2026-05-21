@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useBlocker } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -52,6 +52,8 @@ export function FormNavigationGuard({
   const resolvedMessage =
     message ?? t('You have unsaved changes. Are you sure you want to leave?')
   const blocker = useBlocker({ condition: when })
+  const blockerRef = useRef(blocker)
+  blockerRef.current = blocker
   const [showDialog, setShowDialog] = useState(false)
 
   // Listen to blocker status changes
@@ -61,6 +63,15 @@ export function FormNavigationGuard({
       setShowDialog(true)
     }
   }, [blocker.status])
+
+  // Release navigation blocker when the guarded form unmounts
+  useEffect(() => {
+    return () => {
+      if (blockerRef.current.status === 'blocked') {
+        blockerRef.current.reset?.()
+      }
+    }
+  }, [])
 
   const handleConfirm = () => {
     setShowDialog(false)

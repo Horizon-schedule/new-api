@@ -86,7 +86,7 @@ export const SETTINGS_TABS = [
   },
   {
     id: 'system',
-    titleKey: 'System configuration',
+    titleKey: 'System settings',
     icon: Cog,
   },
   {

@@ -73,17 +73,12 @@ export function PasskeySection({ defaultValues }: PasskeySectionProps) {
   const formDefaults = useMemo<PasskeyFormValues>(
     () => ({
       ...defaultValues,
-      'passkey.origins': (defaultValues['passkey.origins'] as string)
-        .split(',')
-        .map((origin: string) => origin.trim())
-        .filter(Boolean)
-        .join('\n'),
+      'passkey.origins': String(defaultValues['passkey.origins'] ?? ''),
       'passkey.attachment_preference':
-        (defaultValues['passkey.attachment_preference'] as string) === ''
-          ? 'none'
-          : (defaultValues['passkey.attachment_preference'] as
-              | 'platform'
-              | 'cross-platform'),
+        defaultValues['passkey.attachment_preference'] === 'platform' ||
+        defaultValues['passkey.attachment_preference'] === 'cross-platform'
+          ? defaultValues['passkey.attachment_preference']
+          : 'none',
     }),
     [defaultValues]
   )

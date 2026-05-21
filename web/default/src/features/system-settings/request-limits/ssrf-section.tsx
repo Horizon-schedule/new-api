@@ -45,6 +45,11 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
+import {
+  coerceBool,
+  coercePortList,
+  coerceStringList,
+} from '../utils/normalize-security-settings'
 
 const ssrfSchema = z.object({
   fetch_setting: z.object({
@@ -100,19 +105,25 @@ const parsePorts = (value: string) =>
 
 const buildFormDefaults = (
   defaults: SSRFSectionProps['defaultValues']
-): SSRFFormInput => ({
-  fetch_setting: {
-    enable_ssrf_protection: defaults['fetch_setting.enable_ssrf_protection'],
-    allow_private_ip: defaults['fetch_setting.allow_private_ip'],
-    domain_filter_mode: defaults['fetch_setting.domain_filter_mode'],
-    ip_filter_mode: defaults['fetch_setting.ip_filter_mode'],
-    domain_list: defaults['fetch_setting.domain_list'].join('\n'),
-    ip_list: defaults['fetch_setting.ip_list'].join('\n'),
-    allowed_ports: defaults['fetch_setting.allowed_ports'].join(','),
-    apply_ip_filter_for_domain:
-      defaults['fetch_setting.apply_ip_filter_for_domain'],
-  },
-})
+): SSRFFormInput => {
+  const domainList = coerceStringList(defaults['fetch_setting.domain_list'])
+  const ipList = coerceStringList(defaults['fetch_setting.ip_list'])
+  const allowedPorts = coercePortList(defaults['fetch_setting.allowed_ports'])
+
+  return {
+    fetch_setting: {
+      enable_ssrf_protection: defaults['fetch_setting.enable_ssrf_protection'],
+      allow_private_ip: defaults['fetch_setting.allow_private_ip'],
+      domain_filter_mode: coerceBool(defaults['fetch_setting.domain_filter_mode']),
+      ip_filter_mode: coerceBool(defaults['fetch_setting.ip_filter_mode']),
+      domain_list: domainList.join('\n'),
+      ip_list: ipList.join('\n'),
+      allowed_ports: allowedPorts.join(','),
+      apply_ip_filter_for_domain:
+        defaults['fetch_setting.apply_ip_filter_for_domain'],
+    },
+  }
+}
 
 const normalizeDefaults = (
   defaults: SSRFSectionProps['defaultValues']
@@ -120,12 +131,17 @@ const normalizeDefaults = (
   'fetch_setting.enable_ssrf_protection':
     defaults['fetch_setting.enable_ssrf_protection'],
   'fetch_setting.allow_private_ip': defaults['fetch_setting.allow_private_ip'],
-  'fetch_setting.domain_filter_mode':
-    defaults['fetch_setting.domain_filter_mode'],
-  'fetch_setting.ip_filter_mode': defaults['fetch_setting.ip_filter_mode'],
-  'fetch_setting.domain_list': defaults['fetch_setting.domain_list'],
-  'fetch_setting.ip_list': defaults['fetch_setting.ip_list'],
-  'fetch_setting.allowed_ports': defaults['fetch_setting.allowed_ports'],
+  'fetch_setting.domain_filter_mode': coerceBool(
+    defaults['fetch_setting.domain_filter_mode']
+  ),
+  'fetch_setting.ip_filter_mode': coerceBool(defaults['fetch_setting.ip_filter_mode']),
+  'fetch_setting.domain_list': coerceStringList(
+    defaults['fetch_setting.domain_list']
+  ),
+  'fetch_setting.ip_list': coerceStringList(defaults['fetch_setting.ip_list']),
+  'fetch_setting.allowed_ports': coercePortList(
+    defaults['fetch_setting.allowed_ports']
+  ),
   'fetch_setting.apply_ip_filter_for_domain':
     defaults['fetch_setting.apply_ip_filter_for_domain'],
 })
