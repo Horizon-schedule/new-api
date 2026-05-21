@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
@@ -78,20 +79,52 @@ func rateLimitFactory(maxRequestNum int, duration int64, mark string) func(c *gi
 		return func(c *gin.Context) {
 			redisRateLimiter(c, maxRequestNum, duration, mark)
 		}
-	} else {
-		// It's safe to call multi times.
-		inMemoryRateLimiter.Init(common.RateLimitKeyExpirationDuration)
-		return func(c *gin.Context) {
-			memoryRateLimiter(c, maxRequestNum, duration, mark)
-		}
+	}
+	// It's safe to call multi times.
+	inMemoryRateLimiter.Init(common.RateLimitKeyExpirationDuration)
+	return func(c *gin.Context) {
+		memoryRateLimiter(c, maxRequestNum, duration, mark)
 	}
 }
 
-func GlobalWebRateLimit() func(c *gin.Context) {
-	if common.GlobalWebRateLimitEnable {
-		return rateLimitFactory(common.GlobalWebRateLimitNum, common.GlobalWebRateLimitDuration, "GW")
+// isStaticWebAsset reports hashed frontend assets that must not consume the web rate limit budget.
+func isStaticWebAsset(path string) bool {
+	if strings.HasPrefix(path, "/static/") {
+		return true
 	}
-	return defNext
+	lower := strings.ToLower(path)
+	switch lower {
+	case "/favicon.ico", "/logo.png":
+		return true
+	}
+	staticSuffixes := []string{
+		".js", ".css", ".map", ".ico", ".png", ".jpg", ".jpeg", ".gif",
+		".webp", ".svg", ".woff", ".woff2", ".ttf", ".eot",
+	}
+	for _, ext := range staticSuffixes {
+		if strings.HasSuffix(lower, ext) {
+			return true
+		}
+	}
+	return false
+}
+
+func GlobalWebRateLimit() func(c *gin.Context) {
+	if !common.GlobalWebRateLimitEnable {
+		return defNext
+	}
+	inner := rateLimitFactory(
+		common.GlobalWebRateLimitNum,
+		common.GlobalWebRateLimitDuration,
+		"GW",
+	)
+	return func(c *gin.Context) {
+		if isStaticWebAsset(c.Request.URL.Path) {
+			c.Next()
+			return
+		}
+		inner(c)
+	}
 }
 
 func GlobalAPIRateLimit() func(c *gin.Context) {
