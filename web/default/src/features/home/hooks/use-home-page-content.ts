@@ -49,7 +49,7 @@ export function useHomePageContent(): HomePageContentResult {
           new Promise<never>((_, reject) => {
             window.setTimeout(
               () => reject(new Error('home_page_content_timeout')),
-              12_000
+              5_000
             )
           }),
         ])

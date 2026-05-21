@@ -18,33 +18,18 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { lazy, Suspense, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getAuthSectionContent } from './auth/section-registry.tsx'
-import { getBillingSectionContent } from './billing/section-registry.tsx'
-import { getContentSectionContent } from './content/section-registry.tsx'
-import { ServerAddressSection } from './general/server-address-section'
-import { getModelsSectionContent } from './models/section-registry.tsx'
-import { getOperationsSectionContent } from './operations/section-registry.tsx'
-import { getSecuritySectionContent } from './security/section-registry.tsx'
-import { getSiteSectionContent } from './site/section-registry.tsx'
 import type { SettingsTabId } from './settings-tabs.config'
-import {
-  defaultAuthSettings,
-  defaultBillingSettings,
-  defaultContentSettings,
-  defaultModelSettings,
-  defaultOperationsSettings,
-  defaultSecuritySettings,
-  defaultSiteSettings,
-} from './settings-defaults'
 import type { SystemOption } from './types'
-import { getOptionValue } from './hooks/use-system-options'
-import { normalizeSecuritySettings } from './utils/normalize-security-settings'
 
-const LazyRatioSettingsCard = lazy(() =>
-  import('./models/ratio-settings-card').then((m) => ({
-    default: m.RatioSettingsCard,
-  }))
-)
+type StatusMeta = {
+  version?: string | null
+  startTime?: number | null
+}
+
+type TabPanelProps = {
+  options: SystemOption[] | undefined
+  status?: StatusMeta
+}
 
 function TabLoadingFallback() {
   const { t } = useTranslation()
@@ -59,190 +44,335 @@ function withSuspense(content: ReactNode) {
   return <Suspense fallback={<TabLoadingFallback />}>{content}</Suspense>
 }
 
-const getModelDefaults = (
-  settings: ReturnType<typeof getOptionValue<typeof defaultBillingSettings>>
-) => ({
-  ModelPrice: settings.ModelPrice,
-  ModelRatio: settings.ModelRatio,
-  CacheRatio: settings.CacheRatio,
-  CreateCacheRatio: settings.CreateCacheRatio,
-  CompletionRatio: settings.CompletionRatio,
-  ImageRatio: settings.ImageRatio,
-  AudioRatio: settings.AudioRatio,
-  AudioCompletionRatio: settings.AudioCompletionRatio,
-  ExposeRatioEnabled: settings.ExposeRatioEnabled,
-  BillingMode: settings['billing_setting.billing_mode'],
-  BillingExpr: settings['billing_setting.billing_expr'],
+const LazyOperationTab = lazy(async () => {
+  const [
+    { getOperationsSectionContent },
+    { getBillingSectionContent },
+    { getSiteSectionContent },
+    { getSecuritySectionContent },
+    { getOptionValue },
+    { defaultBillingSettings, defaultOperationsSettings, defaultSiteSettings, defaultSecuritySettings },
+    { normalizeSecuritySettings },
+  ] = await Promise.all([
+    import('./operations/section-registry.tsx'),
+    import('./billing/section-registry.tsx'),
+    import('./site/section-registry.tsx'),
+    import('./security/section-registry.tsx'),
+    import('./hooks/use-system-options'),
+    import('./settings-defaults'),
+    import('./utils/normalize-security-settings'),
+  ])
+
+  function OperationTab({ options }: TabPanelProps) {
+    const billing = getOptionValue(options, defaultBillingSettings)
+    const operations = getOptionValue(options, defaultOperationsSettings)
+    const site = getOptionValue(options, defaultSiteSettings)
+    const security = normalizeSecuritySettings(
+      getOptionValue(options, defaultSecuritySettings)
+    )
+    return (
+      <>
+        {getOperationsSectionContent('behavior', operations, undefined, undefined)}
+        {getBillingSectionContent('currency', billing)}
+        {getSiteSectionContent('header-navigation', site)}
+        {getSiteSectionContent('sidebar-modules', site)}
+        {getSecuritySectionContent('sensitive-words', security)}
+        {getOperationsSectionContent('logs', operations, undefined, undefined)}
+        {getOperationsSectionContent('monitoring', operations, undefined, undefined)}
+        {getBillingSectionContent('quota', billing)}
+        {getBillingSectionContent('checkin', billing)}
+      </>
+    )
+  }
+  return { default: OperationTab }
 })
 
-const getGroupDefaults = (
-  settings: ReturnType<typeof getOptionValue<typeof defaultBillingSettings>>
-) => ({
-  TopupGroupRatio: settings.TopupGroupRatio,
-  GroupRatio: settings.GroupRatio,
-  UserUsableGroups: settings.UserUsableGroups,
-  GroupGroupRatio: settings.GroupGroupRatio,
-  AutoGroups: settings.AutoGroups,
-  DefaultUseAutoGroup: settings.DefaultUseAutoGroup,
-  GroupSpecialUsableGroup:
-    settings['group_ratio_setting.group_special_usable_group'],
+const LazyDashboardTab = lazy(async () => {
+  const [{ getContentSectionContent }, { getOptionValue }, { defaultContentSettings }] =
+    await Promise.all([
+      import('./content/section-registry.tsx'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function DashboardTab({ options }: TabPanelProps) {
+    const content = getOptionValue(options, defaultContentSettings)
+    return (
+      <>
+        {getContentSectionContent('dashboard', content)}
+        {getContentSectionContent('announcements', content)}
+        {getContentSectionContent('api-info', content)}
+        {getContentSectionContent('faq', content)}
+        {getContentSectionContent('uptime-kuma', content)}
+      </>
+    )
+  }
+  return { default: DashboardTab }
 })
 
-type StatusMeta = {
-  version?: string | null
-  startTime?: number | null
-}
+const LazyChatsTab = lazy(async () => {
+  const [{ getContentSectionContent }, { getOptionValue }, { defaultContentSettings }] =
+    await Promise.all([
+      import('./content/section-registry.tsx'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function ChatsTab({ options }: TabPanelProps) {
+    const content = getOptionValue(options, defaultContentSettings)
+    return getContentSectionContent('chat', content)
+  }
+  return { default: ChatsTab }
+})
 
-/** 运营设置 — 顺序对齐 web/classic OperationSetting */
-function renderOperationTab(options: SystemOption[] | undefined) {
-  const billing = getOptionValue(options, defaultBillingSettings)
-  const operations = getOptionValue(options, defaultOperationsSettings)
-  const site = getOptionValue(options, defaultSiteSettings)
-  const security = normalizeSecuritySettings(
-    getOptionValue(options, defaultSecuritySettings)
-  )
+const LazyDrawingTab = lazy(async () => {
+  const [{ getContentSectionContent }, { getOptionValue }, { defaultContentSettings }] =
+    await Promise.all([
+      import('./content/section-registry.tsx'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function DrawingTab({ options }: TabPanelProps) {
+    const content = getOptionValue(options, defaultContentSettings)
+    return getContentSectionContent('drawing', content)
+  }
+  return { default: DrawingTab }
+})
 
-  return (
-    <>
-      {getOperationsSectionContent('behavior', operations, undefined, undefined)}
-      {getBillingSectionContent('currency', billing)}
-      {getSiteSectionContent('header-navigation', site)}
-      {getSiteSectionContent('sidebar-modules', site)}
-      {getSecuritySectionContent('sensitive-words', security)}
-      {getOperationsSectionContent('logs', operations, undefined, undefined)}
-      {getOperationsSectionContent('monitoring', operations, undefined, undefined)}
-      {getBillingSectionContent('quota', billing)}
-      {getBillingSectionContent('checkin', billing)}
-    </>
-  )
-}
+const LazyPaymentTab = lazy(async () => {
+  const [{ getBillingSectionContent }, { getOptionValue }, { defaultBillingSettings }] =
+    await Promise.all([
+      import('./billing/section-registry.tsx'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function PaymentTab({ options }: TabPanelProps) {
+    const billing = getOptionValue(options, defaultBillingSettings)
+    return getBillingSectionContent('payment', billing)
+  }
+  return { default: PaymentTab }
+})
 
-function renderDashboardTab(options: SystemOption[] | undefined) {
-  const content = getOptionValue(options, defaultContentSettings)
-  return (
-    <>
-      {getContentSectionContent('dashboard', content)}
-      {getContentSectionContent('announcements', content)}
-      {getContentSectionContent('api-info', content)}
-      {getContentSectionContent('faq', content)}
-      {getContentSectionContent('uptime-kuma', content)}
-    </>
-  )
-}
+const LazyRatioTab = lazy(async () => {
+  const [{ RatioSettingsCard }, { getOptionValue }, { defaultBillingSettings }] =
+    await Promise.all([
+      import('./models/ratio-settings-card'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function RatioTab({ options }: TabPanelProps) {
+    const billing = getOptionValue(options, defaultBillingSettings)
+    return (
+      <RatioSettingsCard
+        titleKey='Group and model pricing settings'
+        descriptionKey='Configure model pricing ratios and tool prices'
+        modelDefaults={{
+          ModelPrice: billing.ModelPrice,
+          ModelRatio: billing.ModelRatio,
+          CacheRatio: billing.CacheRatio,
+          CreateCacheRatio: billing.CreateCacheRatio,
+          CompletionRatio: billing.CompletionRatio,
+          ImageRatio: billing.ImageRatio,
+          AudioRatio: billing.AudioRatio,
+          AudioCompletionRatio: billing.AudioCompletionRatio,
+          ExposeRatioEnabled: billing.ExposeRatioEnabled,
+          BillingMode: billing['billing_setting.billing_mode'],
+          BillingExpr: billing['billing_setting.billing_expr'],
+        }}
+        groupDefaults={{
+          TopupGroupRatio: billing.TopupGroupRatio,
+          GroupRatio: billing.GroupRatio,
+          UserUsableGroups: billing.UserUsableGroups,
+          GroupGroupRatio: billing.GroupGroupRatio,
+          AutoGroups: billing.AutoGroups,
+          DefaultUseAutoGroup: billing.DefaultUseAutoGroup,
+          GroupSpecialUsableGroup:
+            billing['group_ratio_setting.group_special_usable_group'],
+        }}
+        toolPricesDefault={billing['tool_price_setting.prices']}
+        visibleTabs={[
+          'models',
+          'groups',
+          'unset-models',
+          'tool-prices',
+          'upstream-sync',
+        ]}
+      />
+    )
+  }
+  return { default: RatioTab }
+})
 
-function renderChatsTab(options: SystemOption[] | undefined) {
-  const content = getOptionValue(options, defaultContentSettings)
-  return getContentSectionContent('chat', content)
-}
+const LazyRateLimitTab = lazy(async () => {
+  const [
+    { getSecuritySectionContent },
+    { getOptionValue },
+    { defaultSecuritySettings },
+    { normalizeSecuritySettings },
+  ] = await Promise.all([
+    import('./security/section-registry.tsx'),
+    import('./hooks/use-system-options'),
+    import('./settings-defaults'),
+    import('./utils/normalize-security-settings'),
+  ])
+  function RateLimitTab({ options }: TabPanelProps) {
+    const security = normalizeSecuritySettings(
+      getOptionValue(options, defaultSecuritySettings)
+    )
+    return getSecuritySectionContent('rate-limit', security)
+  }
+  return { default: RateLimitTab }
+})
 
-function renderDrawingTab(options: SystemOption[] | undefined) {
-  const content = getOptionValue(options, defaultContentSettings)
-  return getContentSectionContent('drawing', content)
-}
+const LazyModelsTab = lazy(async () => {
+  const [{ getModelsSectionContent }, { getOptionValue }, { defaultModelSettings }] =
+    await Promise.all([
+      import('./models/section-registry.tsx'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function ModelsTab({ options }: TabPanelProps) {
+    const models = getOptionValue(options, defaultModelSettings)
+    return (
+      <>
+        {getModelsSectionContent('global', models)}
+        {getModelsSectionContent('channel-affinity', models)}
+        {getModelsSectionContent('gemini', models)}
+        {getModelsSectionContent('claude', models)}
+        {getModelsSectionContent('grok', models)}
+      </>
+    )
+  }
+  return { default: ModelsTab }
+})
 
-function renderPaymentTab(options: SystemOption[] | undefined) {
-  const billing = getOptionValue(options, defaultBillingSettings)
-  return withSuspense(getBillingSectionContent('payment', billing))
-}
+const LazyModelDeploymentTab = lazy(async () => {
+  const [{ getModelsSectionContent }, { getOptionValue }, { defaultModelSettings }] =
+    await Promise.all([
+      import('./models/section-registry.tsx'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function ModelDeploymentTab({ options }: TabPanelProps) {
+    const models = getOptionValue(options, defaultModelSettings)
+    return getModelsSectionContent('model-deployment', models)
+  }
+  return { default: ModelDeploymentTab }
+})
 
-function renderRatioTab(options: SystemOption[] | undefined) {
-  const billing = getOptionValue(options, defaultBillingSettings)
-  return withSuspense(
-    <LazyRatioSettingsCard
-      titleKey='Group and model pricing settings'
-      descriptionKey='Configure model pricing ratios and tool prices'
-      modelDefaults={getModelDefaults(billing)}
-      groupDefaults={getGroupDefaults(billing)}
-      toolPricesDefault={billing['tool_price_setting.prices']}
-      visibleTabs={[
-        'models',
-        'groups',
-        'unset-models',
-        'tool-prices',
-        'upstream-sync',
-      ]}
-    />
-  )
-}
+const LazyPerformanceTab = lazy(async () => {
+  const [{ getOperationsSectionContent }, { getOptionValue }, { defaultOperationsSettings }] =
+    await Promise.all([
+      import('./operations/section-registry.tsx'),
+      import('./hooks/use-system-options'),
+      import('./settings-defaults'),
+    ])
+  function PerformanceTab({ options }: TabPanelProps) {
+    const operations = getOptionValue(options, defaultOperationsSettings)
+    return getOperationsSectionContent(
+      'performance',
+      operations,
+      undefined,
+      undefined
+    )
+  }
+  return { default: PerformanceTab }
+})
 
-function renderRateLimitTab(options: SystemOption[] | undefined) {
-  const security = normalizeSecuritySettings(
-    getOptionValue(options, defaultSecuritySettings)
-  )
-  return getSecuritySectionContent('rate-limit', security)
-}
+const LazySystemTab = lazy(async () => {
+  const [
+    { ServerAddressSection },
+    { getOperationsSectionContent },
+    { getSecuritySectionContent },
+    { getAuthSectionContent },
+    { getOptionValue },
+    {
+      defaultSiteSettings,
+      defaultAuthSettings,
+      defaultOperationsSettings,
+      defaultSecuritySettings,
+    },
+    { normalizeSecuritySettings },
+  ] = await Promise.all([
+    import('./general/server-address-section'),
+    import('./operations/section-registry.tsx'),
+    import('./security/section-registry.tsx'),
+    import('./auth/section-registry.tsx'),
+    import('./hooks/use-system-options'),
+    import('./settings-defaults'),
+    import('./utils/normalize-security-settings'),
+  ])
 
-function renderModelsTab(options: SystemOption[] | undefined) {
-  const models = getOptionValue(options, defaultModelSettings)
-  return withSuspense(
-    <>
-      {getModelsSectionContent('global', models)}
-      {getModelsSectionContent('channel-affinity', models)}
-      {getModelsSectionContent('gemini', models)}
-      {getModelsSectionContent('claude', models)}
-      {getModelsSectionContent('grok', models)}
-    </>
-  )
-}
+  function SystemTab({ options }: TabPanelProps) {
+    const site = getOptionValue(options, defaultSiteSettings)
+    const auth = getOptionValue(options, defaultAuthSettings)
+    const operations = getOptionValue(options, defaultOperationsSettings)
+    const security = normalizeSecuritySettings(
+      getOptionValue(options, defaultSecuritySettings)
+    )
+    return (
+      <>
+        <ServerAddressSection defaultValue={site.ServerAddress} />
+        {getOperationsSectionContent('worker', operations, undefined, undefined)}
+        {getSecuritySectionContent('ssrf', security)}
+        {getAuthSectionContent('basic-auth', auth)}
+        {getAuthSectionContent('passkey', auth)}
+        {getAuthSectionContent('bot-protection', auth)}
+        {getOperationsSectionContent('email', operations, undefined, undefined)}
+        {getAuthSectionContent('oauth', auth)}
+        {getAuthSectionContent('custom-oauth', auth)}
+      </>
+    )
+  }
+  return { default: SystemTab }
+})
 
-function renderModelDeploymentTab(options: SystemOption[] | undefined) {
-  const models = getOptionValue(options, defaultModelSettings)
-  return getModelsSectionContent('model-deployment', models)
-}
+const LazyOtherTab = lazy(async () => {
+  const [
+    { getSiteSectionContent },
+    { getOperationsSectionContent },
+    { getOptionValue },
+    { defaultSiteSettings, defaultOperationsSettings },
+  ] = await Promise.all([
+    import('./site/section-registry.tsx'),
+    import('./operations/section-registry.tsx'),
+    import('./hooks/use-system-options'),
+    import('./settings-defaults'),
+  ])
 
-function renderPerformanceTab(options: SystemOption[] | undefined) {
-  const operations = getOptionValue(options, defaultOperationsSettings)
-  return getOperationsSectionContent(
-    'performance',
-    operations,
-    undefined,
-    undefined
-  )
-}
+  function OtherTab({ options, status }: TabPanelProps) {
+    const site = getOptionValue(options, defaultSiteSettings)
+    const operations = getOptionValue(options, defaultOperationsSettings)
+    return (
+      <>
+        {getSiteSectionContent('system-info', site)}
+        {getSiteSectionContent('notice', site)}
+        {getOperationsSectionContent(
+          'update-checker',
+          operations,
+          status?.version,
+          status?.startTime
+        )}
+      </>
+    )
+  }
+  return { default: OtherTab }
+})
 
-/** 系统设置 Tab — 顺序对齐 web/classic SystemSetting */
-function renderSystemTab(options: SystemOption[] | undefined) {
-  const site = getOptionValue(options, defaultSiteSettings)
-  const auth = getOptionValue(options, defaultAuthSettings)
-  const operations = getOptionValue(options, defaultOperationsSettings)
-  const security = normalizeSecuritySettings(
-    getOptionValue(options, defaultSecuritySettings)
-  )
-
-  return withSuspense(
-    <>
-      <ServerAddressSection defaultValue={site.ServerAddress} />
-      {getOperationsSectionContent('worker', operations, undefined, undefined)}
-      {getSecuritySectionContent('ssrf', security)}
-      {getAuthSectionContent('basic-auth', auth)}
-      {getAuthSectionContent('passkey', auth)}
-      {getAuthSectionContent('bot-protection', auth)}
-      {getOperationsSectionContent('email', operations, undefined, undefined)}
-      {getAuthSectionContent('oauth', auth)}
-      {getAuthSectionContent('custom-oauth', auth)}
-    </>
-  )
-}
-
-function renderOtherTab(
-  options: SystemOption[] | undefined,
-  status?: StatusMeta
-) {
-  const site = getOptionValue(options, defaultSiteSettings)
-  const operations = getOptionValue(options, defaultOperationsSettings)
-
-  return (
-    <>
-      {getSiteSectionContent('system-info', site)}
-      {getSiteSectionContent('notice', site)}
-      {getOperationsSectionContent(
-        'update-checker',
-        operations,
-        status?.version,
-        status?.startTime
-      )}
-    </>
-  )
+const TAB_PANELS: Record<
+  SettingsTabId,
+  React.LazyExoticComponent<(props: TabPanelProps) => ReactNode>
+> = {
+  operation: LazyOperationTab,
+  dashboard: LazyDashboardTab,
+  chats: LazyChatsTab,
+  drawing: LazyDrawingTab,
+  payment: LazyPaymentTab,
+  ratio: LazyRatioTab,
+  ratelimit: LazyRateLimitTab,
+  models: LazyModelsTab,
+  'model-deployment': LazyModelDeploymentTab,
+  performance: LazyPerformanceTab,
+  system: LazySystemTab,
+  other: LazyOtherTab,
 }
 
 export function renderSettingsTabContent(
@@ -250,34 +380,9 @@ export function renderSettingsTabContent(
   options: SystemOption[] | undefined,
   status?: StatusMeta
 ): ReactNode {
-  switch (tabId) {
-    case 'operation':
-      return renderOperationTab(options)
-    case 'dashboard':
-      return withSuspense(renderDashboardTab(options))
-    case 'chats':
-      return renderChatsTab(options)
-    case 'drawing':
-      return renderDrawingTab(options)
-    case 'payment':
-      return renderPaymentTab(options)
-    case 'ratio':
-      return renderRatioTab(options)
-    case 'ratelimit':
-      return renderRateLimitTab(options)
-    case 'models':
-      return renderModelsTab(options)
-    case 'model-deployment':
-      return renderModelDeploymentTab(options)
-    case 'performance':
-      return renderPerformanceTab(options)
-    case 'system':
-      return renderSystemTab(options)
-    case 'other':
-      return renderOtherTab(options, status)
-    default:
-      return null
-  }
+  const Panel = TAB_PANELS[tabId]
+  if (!Panel) return null
+  return withSuspense(<Panel options={options} status={status} />)
 }
 
 /** Map legacy section paths to classic-style tabs */

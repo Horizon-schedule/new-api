@@ -84,8 +84,8 @@ export default defineConfig(({ envMode }) => {
     },
     server: {
       host: '0.0.0.0',
-      // API 代理到 .env 中的 VITE_REACT_APP_SERVER_URL（默认 http://localhost:3000）
-      port: isProd ? undefined : 3000,
+      // 前端 dev 使用 5173，API 代理到 Go 后端（默认 3000），避免与后端抢端口导致 chunk/API 异常
+      port: isProd ? undefined : 5173,
       proxy: devProxy,
     },
     output: {
@@ -113,9 +113,8 @@ export default defineConfig(({ envMode }) => {
         plugins: [
           tanstackRouter({
             target: 'react',
-            // Dev: avoid per-route async chunks (reduces white flash on navigation + faster HMR feedback).
-            // Prod: keep route-based code splitting.
-            autoCodeSplitting: isProd,
+            // 开发与生产均按路由分包，避免 dev 单包过大导致首屏解析与 HMR 极慢
+            autoCodeSplitting: true,
           }),
         ],
       },

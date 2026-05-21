@@ -38,7 +38,12 @@ export const Route = createFileRoute('/_authenticated')({
 
     // 本地有用户信息，但需要验证 session 是否有效（每个会话只验证一次）
     if (!sessionVerified) {
-      const res = await getSelf().catch(() => null)
+      const res = await Promise.race([
+        getSelf(),
+        new Promise<null>((resolve) => {
+          window.setTimeout(() => resolve(null), 8_000)
+        }),
+      ]).catch(() => null)
       if (res?.success && res.data) {
         // 验证成功，更新用户信息（可能有变化）
         auth.setUser(res.data)
