@@ -122,6 +122,7 @@ export default defineConfig(({ envMode }) => {
       // extracted license files, which some distributions require for open-source compliance.
     },
     performance: {
+      preload: true,
       // Remove console in production
       removeConsole: isProd ? ['log'] : false,
       // Speed up repeated `rsbuild build` (local + CI when node_modules/.cache is preserved).
