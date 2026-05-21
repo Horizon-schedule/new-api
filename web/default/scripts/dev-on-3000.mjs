@@ -1,6 +1,6 @@
 /**
- * 单端口开发：构建前端后由 Go 在 3000 提供页面 + API（与线上一致）
- * Usage: bun run dev  (from web/default)
+ * 仅 3000 端口：构建前端后由 Go 提供页面 + API（与线上一致）
+ * Usage: bun run dev  (from web/default) → http://localhost:3000
  */
 import { spawn } from 'node:child_process'
 import path from 'node:path'

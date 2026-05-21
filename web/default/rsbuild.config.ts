@@ -8,11 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ envMode }) => {
   const env = loadEnv({ mode: envMode, prefixes: ['VITE_'] })
-  /** Go 后端地址（开发时默认 3001，前端 dev 占用 3000） */
+  /** 本地 API 地址（生产/集成开发均为 3000；仅手动 rsbuild dev 时代理用） */
   const apiServerUrl =
     process.env.VITE_REACT_APP_SERVER_URL ||
     env.rawPublicVars.VITE_REACT_APP_SERVER_URL ||
-    'http://localhost:3001'
+    'http://localhost:3000'
 
   const devServerPort = Number(
     process.env.VITE_DEV_SERVER_PORT ||
@@ -39,7 +39,7 @@ export default defineConfig(({ envMode }) => {
           if (!isProd) {
             console.error(
               `[dev-proxy] ${key} -> ${apiServerUrl} failed (${err.code ?? err.message}). ` +
-                `Start Go with PORT=${new URL(apiServerUrl).port || '3001'} (frontend dev uses :${devServerPort}).`
+                'Use "bun run dev" for single-port :3000 (Go serves UI + API).'
             )
           }
           if (!res.headersSent) {
@@ -95,7 +95,6 @@ export default defineConfig(({ envMode }) => {
     },
     server: {
       host: '0.0.0.0',
-      // 浏览器固定 http://localhost:3000；Go 后端用 PORT=3001，由 proxy 转发 /api
       port: isProd ? undefined : devServerPort,
       strictPort: !isProd,
       proxy: devProxy,
@@ -103,9 +102,8 @@ export default defineConfig(({ envMode }) => {
         if (!isProd) {
           // eslint-disable-next-line no-console
           console.log(
-            `\n  Frontend (Rsbuild): ${urls[0] ?? `http://localhost:${devServerPort}`}\n` +
-              `  API proxy target:   ${apiServerUrl}\n` +
-              `  Start backend:      PORT=${new URL(apiServerUrl).port || '3001'} go run . (repo root)\n`
+            `\n  Rsbuild: ${urls[0] ?? `http://localhost:${devServerPort}`}\n` +
+              `  Recommended: bun run dev  →  http://localhost:3000 (Go only, one port)\n`
           )
         }
       },
