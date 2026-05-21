@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useState, useMemo, memo, useCallback, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -55,6 +56,9 @@ import {
   DataTablePagination,
 } from '@/components/data-table'
 import { StatusBadge } from '@/components/status-badge'
+import { getVendors, searchModels } from '@/features/models/api'
+import { vendorsQueryKeys } from '@/features/models/lib'
+import { VendorDirectorySelect } from '@/features/models/components/vendor-directory-select'
 import {
   combineBillingExpr,
   splitBillingExprAndRequestRules,
@@ -240,6 +244,7 @@ export const ModelRatioVisualEditor = memo(
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [globalFilter, setGlobalFilter] = useState('')
+    const [filterVendor, setFilterVendor] = useState('all')
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
     const [pagination, setPagination] = useState<PaginationState>({
       pageIndex: 0,
@@ -283,6 +288,31 @@ export const ModelRatioVisualEditor = memo(
     useEffect(() => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility))
     }, [columnVisibility])
+
+    const { data: vendorsData } = useQuery({
+      queryKey: vendorsQueryKeys.list(),
+      queryFn: () => getVendors({ page_size: 1000 }),
+      staleTime: 60_000,
+    })
+    const vendors = useMemo(
+      () => vendorsData?.data?.items ?? [],
+      [vendorsData?.data?.items]
+    )
+
+    const { data: modelVendorIndexData } = useQuery({
+      queryKey: ['model-pricing-vendor-index'],
+      queryFn: () => searchModels({ page_size: 5000 }),
+      staleTime: 60_000,
+    })
+    const modelVendorByName = useMemo(() => {
+      const map = new Map<string, string>()
+      for (const model of modelVendorIndexData?.data?.items ?? []) {
+        if (model.vendor_id != null) {
+          map.set(model.model_name, String(model.vendor_id))
+        }
+      }
+      return map
+    }, [modelVendorIndexData?.data?.items])
 
     const models = useMemo(() => {
       const priceMap = safeJsonParse<Record<string, number>>(modelPrice, {
@@ -419,6 +449,12 @@ export const ModelRatioVisualEditor = memo(
         rows = rows.filter(isBasePricingUnset)
       }
 
+      if (filterVendor !== 'all') {
+        rows = rows.filter(
+          (row) => modelVendorByName.get(row.name) === filterVendor
+        )
+      }
+
       return rows.sort((a, b) => a.name.localeCompare(b.name))
     }, [
       modelPrice,
@@ -433,6 +469,48 @@ export const ModelRatioVisualEditor = memo(
       billingExpr,
       onlyUnsetModels,
       enabledModelNames,
+      filterVendor,
+      modelVendorByName,
+    ])
+
+    const pricingVendorCounts = useMemo(() => {
+      const priceMap = safeJsonParse<Record<string, number>>(modelPrice, {
+        fallback: {},
+        silent: true,
+      })
+      const ratioMap = safeJsonParse<Record<string, number>>(modelRatio, {
+        fallback: {},
+        silent: true,
+      })
+      const billingModeMap = safeJsonParse<Record<string, string>>(billingMode, {
+        fallback: {},
+        silent: true,
+      })
+      const billingExprMap = safeJsonParse<Record<string, string>>(billingExpr, {
+        fallback: {},
+        silent: true,
+      })
+      const names = new Set([
+        ...Object.keys(priceMap),
+        ...Object.keys(ratioMap),
+        ...Object.keys(billingModeMap),
+        ...Object.keys(billingExprMap),
+        ...(enabledModelNames ?? []),
+      ])
+      const counts: Record<string, number> = { all: names.size }
+      for (const name of names) {
+        const vendorId = modelVendorByName.get(name)
+        if (!vendorId) continue
+        counts[vendorId] = (counts[vendorId] ?? 0) + 1
+      }
+      return counts
+    }, [
+      modelPrice,
+      modelRatio,
+      billingMode,
+      billingExpr,
+      enabledModelNames,
+      modelVendorByName,
     ])
 
     const modeCounts = useMemo(
@@ -918,7 +996,7 @@ export const ModelRatioVisualEditor = memo(
 
     return (
       <div className='flex flex-col gap-4'>
-        <div className='grid min-h-0 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(520px,0.9fr)]'>
+        <div className='grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(520px,0.9fr)]'>
           <div className='flex min-w-0 flex-col gap-4'>
             <DataTableToolbar
               table={table}
@@ -947,10 +1025,21 @@ export const ModelRatioVisualEditor = memo(
                 },
               ]}
               preActions={
-                <Button onClick={handleAdd}>
-                  <Plus data-icon='inline-start' />
-                  {t('Add model')}
-                </Button>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <VendorDirectorySelect
+                    vendors={vendors}
+                    activeVendorKey={filterVendor}
+                    onVendorChange={(value) => {
+                      setFilterVendor(value)
+                      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+                    }}
+                    vendorCounts={pricingVendorCounts}
+                  />
+                  <Button onClick={handleAdd}>
+                    <Plus data-icon='inline-start' />
+                    {t('Add model')}
+                  </Button>
+                </div>
               }
             />
 
@@ -961,7 +1050,7 @@ export const ModelRatioVisualEditor = memo(
                   : t('No models configured. Use Add model to get started.')}
               </div>
             ) : (
-              <div className='overflow-hidden rounded-md border'>
+              <div className='overflow-x-auto rounded-md border'>
                 <Table>
                   <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -1025,10 +1114,10 @@ export const ModelRatioVisualEditor = memo(
                 onCancel={handleCancel}
                 editData={editData}
                 selectedTargetCount={selectedTargetCount}
-                className='sticky top-4 h-[calc(100vh-8rem)] min-h-[620px]'
+                className='md:sticky md:top-4 md:max-h-[min(70svh,720px)] md:self-start'
               />
             ) : (
-              <div className='bg-card text-muted-foreground sticky top-4 flex h-[calc(100vh-8rem)] min-h-[420px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 text-center'>
+              <div className='bg-card text-muted-foreground flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 text-center md:sticky md:top-4 md:self-start'>
                 <div className='text-foreground text-base font-medium'>
                   {t('Select a model to edit pricing')}
                 </div>

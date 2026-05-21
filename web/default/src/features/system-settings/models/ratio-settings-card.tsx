@@ -543,9 +543,11 @@ export function RatioSettingsCard({
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as RatioTabId)}
-          className='space-y-6'
+          className='block space-y-6'
         >
-          <TabsList className={`grid w-full ${tabsGridClass}`}>
+          <TabsList
+            className={`bg-background sticky top-0 z-10 grid w-full shrink-0 ${tabsGridClass}`}
+          >
             {visibleTabs.map((tab) => (
               <TabsTrigger key={tab} value={tab}>
                 {t(tabLabels[tab])}
@@ -554,7 +556,7 @@ export function RatioSettingsCard({
           </TabsList>
 
           {visibleTabs.map((tab) => (
-            <TabsContent key={tab} value={tab}>
+            <TabsContent key={tab} value={tab} className='flex-none outline-none'>
               {activeTab === tab ? renderTabContent(tab) : null}
             </TabsContent>
           ))}

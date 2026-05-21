@@ -261,7 +261,7 @@ export const ToolPriceSettings = memo(function ToolPriceSettings({
       </div>
 
       {editMode === 'visual' ? (
-        <div className='overflow-hidden rounded-md border'>
+        <div className='overflow-x-auto rounded-md border'>
           <Table>
             <TableHeader>
               <TableRow>

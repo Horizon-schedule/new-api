@@ -861,7 +861,7 @@ function GroupPricingTable({
       </CardHeader>
       <CardContent>
         <div className='space-y-3'>
-          <div className='overflow-hidden rounded-md border'>
+          <div className='overflow-x-auto rounded-md border'>
             <Table>
               <TableHeader>
                 <TableRow>

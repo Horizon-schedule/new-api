@@ -30,8 +30,8 @@ export function SettingsShell() {
   const activeTab = (params.tab as SettingsTabId | undefined) ?? 'operation'
 
   return (
-    <div className='flex min-h-0 flex-1 flex-col gap-4'>
-      <div>
+    <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
+      <div className='shrink-0'>
         <h1 className='text-2xl font-semibold tracking-tight'>
           {t('System Settings')}
         </h1>
@@ -40,7 +40,7 @@ export function SettingsShell() {
         </p>
       </div>
 
-      <div className='flex min-h-0 flex-1 gap-6'>
+      <div className='flex min-h-0 flex-1 gap-6 overflow-hidden'>
         <aside className='bg-card ring-border/60 hidden w-56 shrink-0 flex-col rounded-xl p-2 shadow-sm ring-1 md:flex'>
           <nav className='flex flex-col gap-0.5 overflow-y-auto'>
             {SETTINGS_TABS.map((tab) => {
@@ -66,8 +66,8 @@ export function SettingsShell() {
           </nav>
         </aside>
 
-        <div className='min-w-0 flex-1'>
-          <div className='bg-card ring-border/60 mb-4 flex gap-1 overflow-x-auto rounded-xl p-1 shadow-sm ring-1 md:hidden'>
+        <div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'>
+          <div className='bg-card ring-border/60 mb-4 flex shrink-0 gap-1 overflow-x-auto rounded-xl p-1 shadow-sm ring-1 md:hidden'>
             {SETTINGS_TABS.map((tab) => {
               const isActive = activeTab === tab.id
               return (

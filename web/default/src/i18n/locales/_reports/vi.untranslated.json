@@ -19,6 +19,8 @@
   "operation and charging behavior": "operation and charging behavior",
   "Payment, redemption codes, subscription plans, and invitation rewards are locked until the root administrator confirms the compliance terms.": "Payment, redemption codes, subscription plans, and invitation rewards are locked until the root administrator confirms the compliance terms.",
   "Please type the following text to confirm:": "Please type the following text to confirm:",
+  "Manage preset groups for models, tags, endpoints, and more": "Manage preset groups for models, tags, endpoints, and more",
+  "Add to prefill group": "Add to prefill group",
   "Redemption codes are disabled until the administrator confirms compliance terms.": "Redemption codes are disabled until the administrator confirms compliance terms.",
   "Referral reward transfer is disabled until the administrator confirms compliance terms.": "Referral reward transfer is disabled until the administrator confirms compliance terms.",
   "Set separate prices for cache reads and writes.": "Set separate prices for cache reads and writes.",

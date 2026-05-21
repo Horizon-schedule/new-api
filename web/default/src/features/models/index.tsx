@@ -30,6 +30,7 @@ import { DeploymentsTable } from './components/deployments-table'
 import { CreateDeploymentDrawer } from './components/dialogs/create-deployment-drawer'
 import { ModelsDialogs } from './components/models-dialogs'
 import { ModelsPrimaryButtons } from './components/models-primary-buttons'
+import { ModelsVendorDirectory } from './components/models-vendor-directory'
 import { ModelsProvider, useModels } from './components/models-provider'
 import { ModelsTable } from './components/models-table'
 import { useModelDeploymentSettings } from './hooks/use-model-deployment-settings'
@@ -57,6 +58,9 @@ const SECTION_META: Record<
 }
 
 function ModelsContent() {
+  const [vendorCounts, setVendorCounts] = useState<
+    Record<string, number> | undefined
+  >()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -131,7 +135,10 @@ function ModelsContent() {
         </SectionPageLayout.Description>
         <SectionPageLayout.Actions>
           {activeSection === 'metadata' ? (
-            <ModelsPrimaryButtons />
+            <div className='flex flex-wrap items-center gap-2'>
+              <ModelsVendorDirectory vendorCounts={vendorCounts} />
+              <ModelsPrimaryButtons />
+            </div>
           ) : (
             <Button onClick={() => setCreateDeploymentOpen(true)} size='sm'>
               <Plus className='h-4 w-4' />
@@ -152,7 +159,7 @@ function ModelsContent() {
             </Tabs>
             <div className='flex min-h-0 flex-1 flex-col'>
             {activeSection === 'metadata' ? (
-              <ModelsTable />
+              <ModelsTable onVendorCountsChange={setVendorCounts} />
             ) : (
               <DeploymentAccessGuard
                 loading={deploymentLoading}

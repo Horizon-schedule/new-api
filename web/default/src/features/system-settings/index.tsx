@@ -22,7 +22,7 @@ import { SettingsShell } from './components/settings-shell'
 export function SystemSettings() {
   return (
     <Main>
-      <div className='flex min-h-0 flex-1 flex-col px-4 pt-6 pb-4'>
+      <div className='flex h-full min-h-0 flex-1 flex-col overflow-hidden px-4 pt-6 pb-4'>
         <SettingsShell />
       </div>
     </Main>
