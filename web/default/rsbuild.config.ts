@@ -8,27 +8,38 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ envMode }) => {
   const env = loadEnv({ mode: envMode, prefixes: ['VITE_'] })
-  const serverUrl =
+  /** Go 后端地址（开发时默认 3001，前端 dev 占用 3000） */
+  const apiServerUrl =
     process.env.VITE_REACT_APP_SERVER_URL ||
     env.rawPublicVars.VITE_REACT_APP_SERVER_URL ||
-    'http://localhost:3000'
+    'http://localhost:3001'
+
+  const devServerPort = Number(
+    process.env.VITE_DEV_SERVER_PORT ||
+      env.rawPublicVars.VITE_DEV_SERVER_PORT ||
+      3000
+  )
 
   const isProd = envMode === 'production'
   const devProxy = Object.fromEntries(
     (['/api', '/mj', '/pg'] as const).map((key) => [
       key,
       {
-        target: serverUrl,
+        target: apiServerUrl,
         changeOrigin: true,
         onError: (
           err: NodeJS.ErrnoException,
           _req: unknown,
-          res: { writeHead: (code: number, headers: object) => void; end: (body: string) => void },
+          res: {
+            headersSent?: boolean
+            writeHead: (code: number, headers: object) => void
+            end: (body: string) => void
+          }
         ) => {
           if (!isProd) {
             console.error(
-              `[dev-proxy] ${key} -> ${serverUrl} failed (${err.code ?? err.message}). ` +
-                'Start the Go backend with PORT=3000 (see web/default/.env.development).',
+              `[dev-proxy] ${key} -> ${apiServerUrl} failed (${err.code ?? err.message}). ` +
+                `Start Go with PORT=${new URL(apiServerUrl).port || '3001'} (frontend dev uses :${devServerPort}).`
             )
           }
           if (!res.headersSent) {
@@ -84,9 +95,20 @@ export default defineConfig(({ envMode }) => {
     },
     server: {
       host: '0.0.0.0',
-      // 前端 dev 使用 5173，API 代理到 Go 后端（默认 3000），避免与后端抢端口导致 chunk/API 异常
-      port: isProd ? undefined : 5173,
+      // 浏览器固定 http://localhost:3000；Go 后端用 PORT=3001，由 proxy 转发 /api
+      port: isProd ? undefined : devServerPort,
+      strictPort: !isProd,
       proxy: devProxy,
+      printUrls: ({ urls }) => {
+        if (!isProd) {
+          // eslint-disable-next-line no-console
+          console.log(
+            `\n  Frontend (Rsbuild): ${urls[0] ?? `http://localhost:${devServerPort}`}\n` +
+              `  API proxy target:   ${apiServerUrl}\n` +
+              `  Start backend:      PORT=${new URL(apiServerUrl).port || '3001'} go run . (repo root)\n`
+          )
+        }
+      },
     },
     output: {
       // Production optimizations

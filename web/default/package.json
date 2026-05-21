@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "rsbuild dev",
+    "dev:backend": "node scripts/run-backend-dev.mjs",
     "build": "rsbuild build",
     "build:check": "tsc -b && rsbuild build",
     "typecheck": "tsc -b",
