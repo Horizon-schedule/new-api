@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useState, useMemo, memo, useCallback, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { type Control, useWatch } from 'react-hook-form'
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -56,8 +57,8 @@ import {
   DataTablePagination,
 } from '@/components/data-table'
 import { StatusBadge } from '@/components/status-badge'
-import { getVendors, searchModels } from '@/features/models/api'
-import { vendorsQueryKeys } from '@/features/models/lib'
+import { getModelVendorIndex, getVendors } from '@/features/models/api'
+import { modelsQueryKeys, vendorsQueryKeys } from '@/features/models/lib'
 import { VendorDirectorySelect } from '@/features/models/components/vendor-directory-select'
 import {
   combineBillingExpr,
@@ -70,17 +71,21 @@ import {
   type ModelRatioData,
 } from './model-pricing-sheet'
 
+type ModelRatioFormFields = {
+  ModelPrice: string
+  ModelRatio: string
+  CacheRatio: string
+  CreateCacheRatio: string
+  CompletionRatio: string
+  ImageRatio: string
+  AudioRatio: string
+  AudioCompletionRatio: string
+  BillingMode: string
+  BillingExpr: string
+}
+
 type ModelRatioVisualEditorProps = {
-  modelPrice: string
-  modelRatio: string
-  cacheRatio: string
-  createCacheRatio: string
-  completionRatio: string
-  imageRatio: string
-  audioRatio: string
-  audioCompletionRatio: string
-  billingMode: string
-  billingExpr: string
+  control: Control<ModelRatioFormFields>
   onChange: (field: string, value: string) => void
   /** When set, only show models missing base price/ratio (classic unset tab) */
   onlyUnsetModels?: boolean
@@ -222,20 +227,37 @@ const getPriceDetail = (row: ModelRow, t: (key: string) => string) => {
 
 export const ModelRatioVisualEditor = memo(
   function ModelRatioVisualEditor({
-    modelPrice,
-    modelRatio,
-    cacheRatio,
-    createCacheRatio,
-    completionRatio,
-    imageRatio,
-    audioRatio,
-    audioCompletionRatio,
-    billingMode,
-    billingExpr,
+    control,
     onChange,
     onlyUnsetModels = false,
     enabledModelNames,
   }: ModelRatioVisualEditorProps) {
+    const [
+      modelPrice = '',
+      modelRatio = '',
+      cacheRatio = '',
+      createCacheRatio = '',
+      completionRatio = '',
+      imageRatio = '',
+      audioRatio = '',
+      audioCompletionRatio = '',
+      billingMode = '',
+      billingExpr = '',
+    ] = useWatch({
+      control,
+      name: [
+        'ModelPrice',
+        'ModelRatio',
+        'CacheRatio',
+        'CreateCacheRatio',
+        'CompletionRatio',
+        'ImageRatio',
+        'AudioRatio',
+        'AudioCompletionRatio',
+        'BillingMode',
+        'BillingExpr',
+      ],
+    })
     const { t } = useTranslation()
     const isMobile = useMediaQuery('(max-width: 767px)')
     const [sheetOpen, setSheetOpen] = useState(false)
@@ -300,19 +322,20 @@ export const ModelRatioVisualEditor = memo(
     )
 
     const { data: modelVendorIndexData } = useQuery({
-      queryKey: ['model-pricing-vendor-index'],
-      queryFn: () => searchModels({ page_size: 5000 }),
-      staleTime: 60_000,
+      queryKey: modelsQueryKeys.vendorIndex(),
+      queryFn: getModelVendorIndex,
+      staleTime: 5 * 60_000,
+      gcTime: 30 * 60_000,
     })
     const modelVendorByName = useMemo(() => {
       const map = new Map<string, string>()
-      for (const model of modelVendorIndexData?.data?.items ?? []) {
+      for (const model of modelVendorIndexData?.data ?? []) {
         if (model.vendor_id != null) {
           map.set(model.model_name, String(model.vendor_id))
         }
       }
       return map
-    }, [modelVendorIndexData?.data?.items])
+    }, [modelVendorIndexData?.data])
 
     const models = useMemo(() => {
       const priceMap = safeJsonParse<Record<string, number>>(modelPrice, {
@@ -482,19 +505,9 @@ export const ModelRatioVisualEditor = memo(
         fallback: {},
         silent: true,
       })
-      const billingModeMap = safeJsonParse<Record<string, string>>(billingMode, {
-        fallback: {},
-        silent: true,
-      })
-      const billingExprMap = safeJsonParse<Record<string, string>>(billingExpr, {
-        fallback: {},
-        silent: true,
-      })
       const names = new Set([
         ...Object.keys(priceMap),
         ...Object.keys(ratioMap),
-        ...Object.keys(billingModeMap),
-        ...Object.keys(billingExprMap),
         ...(enabledModelNames ?? []),
       ])
       const counts: Record<string, number> = { all: names.size }
@@ -504,14 +517,7 @@ export const ModelRatioVisualEditor = memo(
         counts[vendorId] = (counts[vendorId] ?? 0) + 1
       }
       return counts
-    }, [
-      modelPrice,
-      modelRatio,
-      billingMode,
-      billingExpr,
-      enabledModelNames,
-      modelVendorByName,
-    ])
+    }, [modelPrice, modelRatio, enabledModelNames, modelVendorByName])
 
     const modeCounts = useMemo(
       () =>

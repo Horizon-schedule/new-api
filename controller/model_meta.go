@@ -13,6 +13,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetModelVendorIndex returns a lightweight model_name -> vendor_id mapping.
+func GetModelVendorIndex(c *gin.Context) {
+	items, err := model.GetModelVendorIndex()
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, items)
+}
+
 // GetAllModelsMeta 获取模型列表（分页）
 func GetAllModelsMeta(c *gin.Context) {
 

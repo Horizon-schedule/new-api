@@ -446,10 +446,14 @@ export function RatioSettingsCard({
     resetMutate()
   }, [resetMutate])
 
+  const defaultTab = visibleTabs[0] ?? 'models'
+  const [activeTab, setActiveTab] = useState<RatioTabId>(defaultTab)
+
   const { data: enabledModelsResponse } = useQuery({
     queryKey: ['channel-enabled-models'],
     queryFn: getEnabledModels,
     staleTime: 60_000,
+    enabled: activeTab === 'unset-models',
   })
   const enabledModelNames = enabledModelsResponse?.data ?? []
 
@@ -468,8 +472,6 @@ export function RatioSettingsCard({
       4: 'grid-cols-4',
       5: 'grid-cols-5',
     }[visibleTabs.length] ?? 'grid-cols-5'
-  const defaultTab = visibleTabs[0] ?? 'models'
-  const [activeTab, setActiveTab] = useState<RatioTabId>(defaultTab)
 
   const renderTabContent = (tab: RatioTabId) => {
     if (tab === 'models') {

@@ -29,7 +29,9 @@ import type {
 } from './types'
 
 export async function getSystemOptions() {
-  const res = await api.get<SystemOptionsResponse>('/api/option/')
+  const res = await api.get<SystemOptionsResponse>('/api/option/', {
+    params: { skip_completion_ratio_meta: 'true' },
+  })
   return res.data
 }
 

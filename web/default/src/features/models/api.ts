@@ -231,6 +231,18 @@ export async function applyUpstreamOverwrite(params: {
 // ============================================================================
 
 /**
+ * Lightweight model_name -> vendor_id mapping for pricing filters.
+ */
+export async function getModelVendorIndex(): Promise<{
+  success: boolean
+  message?: string
+  data?: Array<{ model_name: string; vendor_id: number }>
+}> {
+  const res = await api.get('/api/models/vendor-index')
+  return res.data
+}
+
+/**
  * Get missing models (used but not configured)
  */
 export async function getMissingModels(): Promise<MissingModelsResponse> {

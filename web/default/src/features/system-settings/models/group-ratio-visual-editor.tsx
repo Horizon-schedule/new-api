@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useState, useMemo, useEffect, useCallback, memo } from 'react'
+import { type Control, useWatch } from 'react-hook-form'
 import { Pencil, Plus, Trash2, GripVertical, ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -53,12 +54,17 @@ import {
 } from '@/components/ui/table'
 import { safeJsonParse } from '../utils/json-parser'
 
+type GroupFormValues = {
+  GroupRatio: string
+  TopupGroupRatio: string
+  UserUsableGroups: string
+  GroupGroupRatio: string
+  AutoGroups: string
+}
+
 type GroupRatioVisualEditorProps = {
-  groupRatio: string
-  topupGroupRatio: string
-  userUsableGroups: string
-  groupGroupRatio: string
-  autoGroups: string
+  control: Control<GroupFormValues>
+  getFieldValue: (name: keyof GroupFormValues) => string
   onChange: (field: string, value: string) => void
 }
 
@@ -165,14 +171,14 @@ function sourceGroupPricingSignature(
 }
 
 export const GroupRatioVisualEditor = memo(function GroupRatioVisualEditor({
-  groupRatio,
-  topupGroupRatio,
-  userUsableGroups,
-  groupGroupRatio,
-  autoGroups,
+  control,
+  getFieldValue,
   onChange,
 }: GroupRatioVisualEditorProps) {
   const { t } = useTranslation()
+  const topupGroupRatio = useWatch({ control, name: 'TopupGroupRatio' }) ?? ''
+  const autoGroups = useWatch({ control, name: 'AutoGroups' }) ?? ''
+  const groupGroupRatio = useWatch({ control, name: 'GroupGroupRatio' }) ?? ''
   const [simpleDialogOpen, setSimpleDialogOpen] = useState(false)
   const [simpleDialogType, setSimpleDialogType] = useState<
     'groupRatio' | 'topupGroupRatio' | null
@@ -250,7 +256,9 @@ export const GroupRatioVisualEditor = memo(function GroupRatioVisualEditor({
     if (!simpleDialogType) return
 
     const fieldName =
-      simpleDialogType === 'groupRatio' ? groupRatio : topupGroupRatio
+      simpleDialogType === 'groupRatio'
+        ? getFieldValue('GroupRatio')
+        : topupGroupRatio
     const map = safeJsonParse<Record<string, number>>(fieldName, {
       fallback: {},
       silent: true,
@@ -272,7 +280,8 @@ export const GroupRatioVisualEditor = memo(function GroupRatioVisualEditor({
     type: 'groupRatio' | 'topupGroupRatio',
     name: string
   ) => {
-    const fieldName = type === 'groupRatio' ? groupRatio : topupGroupRatio
+    const fieldName =
+      type === 'groupRatio' ? getFieldValue('GroupRatio') : topupGroupRatio
     const map = safeJsonParse<Record<string, number>>(fieldName, {
       fallback: {},
       silent: true,
@@ -410,11 +419,7 @@ export const GroupRatioVisualEditor = memo(function GroupRatioVisualEditor({
 
   return (
     <div className='space-y-4'>
-      <GroupPricingTable
-        groupRatio={groupRatio}
-        userUsableGroups={userUsableGroups}
-        onChange={onChange}
-      />
+      <GroupPricingTable control={control} onChange={onChange} />
 
       {/* Topup Group Ratios */}
       <Card className={sectionCardClassName}>
@@ -751,17 +756,14 @@ export const GroupRatioVisualEditor = memo(function GroupRatioVisualEditor({
 })
 
 type GroupPricingTableProps = {
-  groupRatio: string
-  userUsableGroups: string
+  control: Control<GroupFormValues>
   onChange: (field: string, value: string) => void
 }
 
-function GroupPricingTable({
-  groupRatio,
-  userUsableGroups,
-  onChange,
-}: GroupPricingTableProps) {
+function GroupPricingTable({ control, onChange }: GroupPricingTableProps) {
   const { t } = useTranslation()
+  const groupRatio = useWatch({ control, name: 'GroupRatio' }) ?? ''
+  const userUsableGroups = useWatch({ control, name: 'UserUsableGroups' }) ?? ''
   const [rows, setRows] = useState<GroupPricingRow[]>(() =>
     buildGroupPricingRows(groupRatio, userUsableGroups)
   )

@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { memo, useCallback, useState } from 'react'
-import { type UseFormReturn } from 'react-hook-form'
+import { type UseFormReturn, useWatch } from 'react-hook-form'
 import { Code2, Eye, HelpCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -87,6 +87,9 @@ export const GroupRatioForm = memo(function GroupRatioForm({
     setEditMode((prev) => (prev === 'visual' ? 'json' : 'visual'))
   }, [])
 
+  const groupSpecialUsableGroup =
+    useWatch({ control: form.control, name: 'GroupSpecialUsableGroup' }) ?? ''
+
   return (
     <div className='space-y-6'>
       <div className='flex flex-wrap justify-end gap-2'>
@@ -115,18 +118,15 @@ export const GroupRatioForm = memo(function GroupRatioForm({
         {editMode === 'visual' ? (
           <div className='space-y-6'>
             <GroupRatioVisualEditor
-              groupRatio={form.watch('GroupRatio')}
-              topupGroupRatio={form.watch('TopupGroupRatio')}
-              userUsableGroups={form.watch('UserUsableGroups')}
-              groupGroupRatio={form.watch('GroupGroupRatio')}
-              autoGroups={form.watch('AutoGroups')}
+              control={form.control}
+              getFieldValue={form.getValues}
               onChange={(field, value) =>
                 handleFieldChange(field as keyof GroupFormValues, value)
               }
             />
 
             <GroupSpecialUsableRulesEditor
-              value={form.watch('GroupSpecialUsableGroup')}
+              value={groupSpecialUsableGroup}
               onChange={(value) =>
                 handleFieldChange('GroupSpecialUsableGroup', value)
               }

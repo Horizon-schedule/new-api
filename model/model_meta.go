@@ -85,6 +85,19 @@ func (mi *Model) Delete() error {
 	return DB.Delete(mi).Error
 }
 
+type ModelVendorIndexItem struct {
+	ModelName string `json:"model_name"`
+	VendorID  int    `json:"vendor_id"`
+}
+
+func GetModelVendorIndex() ([]ModelVendorIndexItem, error) {
+	var items []ModelVendorIndexItem
+	err := DB.Model(&Model{}).
+		Select("model_name", "vendor_id").
+		Find(&items).Error
+	return items, err
+}
+
 func GetVendorModelCounts() (map[int64]int64, error) {
 	var stats []struct {
 		VendorID int64

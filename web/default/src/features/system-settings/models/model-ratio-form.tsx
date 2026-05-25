@@ -110,16 +110,7 @@ export const ModelRatioForm = memo(function ModelRatioForm({
         {editMode === 'visual' ? (
           <div className='space-y-6'>
             <ModelRatioVisualEditor
-              modelPrice={form.watch('ModelPrice')}
-              modelRatio={form.watch('ModelRatio')}
-              cacheRatio={form.watch('CacheRatio')}
-              createCacheRatio={form.watch('CreateCacheRatio')}
-              completionRatio={form.watch('CompletionRatio')}
-              imageRatio={form.watch('ImageRatio')}
-              audioRatio={form.watch('AudioRatio')}
-              audioCompletionRatio={form.watch('AudioCompletionRatio')}
-              billingMode={form.watch('BillingMode')}
-              billingExpr={form.watch('BillingExpr')}
+              control={form.control}
               onlyUnsetModels={onlyUnsetModels}
               enabledModelNames={enabledModelNames}
               onChange={(field, value) => {

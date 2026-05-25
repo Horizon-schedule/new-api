@@ -110,10 +110,12 @@ func GetOptions(c *gin.Context) {
 		}
 	}
 	common.OptionMapRWMutex.Unlock()
-	options = append(options, &model.Option{
-		Key:   "CompletionRatioMeta",
-		Value: buildCompletionRatioMetaValue(optionValues),
-	})
+	if c.Query("skip_completion_ratio_meta") != "true" {
+		options = append(options, &model.Option{
+			Key:   "CompletionRatioMeta",
+			Value: buildCompletionRatioMetaValue(optionValues),
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
