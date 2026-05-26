@@ -25,6 +25,14 @@ import {
 
 export const Route = createFileRoute('/_authenticated/system-settings/$tab')({
   beforeLoad: ({ params }) => {
+    // Legacy tab id + static /system-settings/models route caused redirect loops.
+    if (params.tab === 'models') {
+      throw redirect({
+        to: '/system-settings/$tab',
+        params: { tab: 'model-settings' },
+      })
+    }
+
     const validTabs = SETTINGS_TAB_IDS as unknown as string[]
     if (!validTabs.includes(params.tab)) {
       throw redirect({

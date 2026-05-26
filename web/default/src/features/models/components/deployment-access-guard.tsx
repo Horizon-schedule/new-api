@@ -106,8 +106,8 @@ export function DeploymentAccessGuard({
 
   const handleGoToSettings = () => {
     navigate({
-      to: '/system-settings/models/$section',
-      params: { section: 'model-deployment' },
+      to: '/system-settings/$tab',
+      params: { tab: 'model-deployment' },
     })
   }
 

@@ -18,30 +18,22 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useParams } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { useStatus } from '@/hooks/use-status'
-import { useSettingsOptionsQuery } from './settings-options-provider'
 import {
   SETTINGS_DEFAULT_TAB,
   type SettingsTabId,
 } from '../settings-tabs.config'
 import { renderSettingsTabContent } from '../tab-content-registry'
+import { useSettingsOptionsQuery } from './settings-options-provider'
 
 export function SettingsTabPage() {
   const { t } = useTranslation()
-  const { data, isLoading } = useSettingsOptionsQuery()
+  const { data, isPending, isError, refetch } = useSettingsOptionsQuery()
   const { status } = useStatus()
-  const params = useParams({
-    from: '/_authenticated/system-settings/$tab',
-  })
+  const params = useParams({ strict: false })
   const tabId = (params.tab ?? SETTINGS_DEFAULT_TAB) as SettingsTabId
-
-  if (isLoading && !data) {
-    return (
-      <div className='text-muted-foreground flex min-h-[240px] items-center justify-center'>
-        {t('Loading settings...')}
-      </div>
-    )
-  }
 
   const content = renderSettingsTabContent(tabId, data?.data, {
     version: status?.version as string | undefined,
@@ -50,6 +42,21 @@ export function SettingsTabPage() {
 
   return (
     <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+      {isPending && !data ? (
+        <div className='text-muted-foreground mb-3 shrink-0 text-xs'>
+          {t('Loading settings...')}
+        </div>
+      ) : null}
+      {isError ? (
+        <Alert variant='destructive' className='mb-3 shrink-0'>
+          <AlertDescription className='flex flex-wrap items-center justify-between gap-2'>
+            <span>{t('Failed to load settings. Showing defaults.')}</span>
+            <Button type='button' size='sm' variant='outline' onClick={() => refetch()}>
+              {t('Retry')}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <div className='faded-bottom min-h-0 flex-1 overflow-y-auto overscroll-y-contain scroll-smooth pb-12'>
         <div key={tabId} className='space-y-4'>
           {content}

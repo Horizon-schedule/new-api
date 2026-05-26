@@ -17,7 +17,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { Link, Outlet, useParams } from '@tanstack/react-router'
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import {
@@ -30,20 +29,6 @@ export function SettingsShell() {
   const { t } = useTranslation()
   const params = useParams({ strict: false })
   const activeTab = (params.tab as SettingsTabId | undefined) ?? 'operation'
-
-  useEffect(() => {
-    const warmTabChunks = () => {
-      void import('../tab-content-panels')
-    }
-
-    if ('requestIdleCallback' in window) {
-      const idleId = window.requestIdleCallback(warmTabChunks)
-      return () => window.cancelIdleCallback(idleId)
-    }
-
-    const timeoutId = window.setTimeout(warmTabChunks, 200)
-    return () => window.clearTimeout(timeoutId)
-  }, [])
 
   return (
     <SettingsOptionsProvider>

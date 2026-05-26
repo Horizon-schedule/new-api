@@ -70,7 +70,7 @@ export const SETTINGS_TABS = [
     icon: Gauge,
   },
   {
-    id: 'models',
+    id: 'model-settings',
     titleKey: 'Model settings',
     icon: Shapes,
   },
