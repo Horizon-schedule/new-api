@@ -315,10 +315,10 @@ const LazySystemTab = lazy(async () => {
         {getSecuritySectionContent('ssrf', security)}
         {getAuthSectionContent('basic-auth', auth)}
         {getAuthSectionContent('passkey', auth)}
-        {getAuthSectionContent('bot-protection', auth)}
         {getOperationsSectionContent('email', operations, undefined, undefined)}
         {getAuthSectionContent('oauth', auth)}
         {getAuthSectionContent('custom-oauth', auth)}
+        {getAuthSectionContent('bot-protection', auth)}
       </>
     )
   }
@@ -343,14 +343,14 @@ const LazyOtherTab = lazy(async () => {
     const operations = getOptionValue(options, defaultOperationsSettings)
     return (
       <>
-        {getSiteSectionContent('system-info', site)}
-        {getSiteSectionContent('notice', site)}
         {getOperationsSectionContent(
           'update-checker',
           operations,
           status?.version,
           status?.startTime
         )}
+        {getSiteSectionContent('notice', site)}
+        {getSiteSectionContent('system-info', site)}
       </>
     )
   }

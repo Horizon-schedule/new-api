@@ -54,10 +54,18 @@ export function PageTransition(props: PageTransitionProps) {
   )
 }
 
+/** Keep one outlet instance while switching system-settings tabs. */
+export function resolveAnimatedOutletKey(pathname: string): string {
+  if (/^\/system-settings(?:\/[^/]+)?\/?$/.test(pathname)) {
+    return '/system-settings'
+  }
+  return pathname
+}
+
 export function AnimatedOutlet() {
   const shouldReduce = useReducedMotion()
   const routeKey = useRouterState({
-    select: (s) => s.location.pathname,
+    select: (s) => resolveAnimatedOutletKey(s.location.pathname),
   })
 
   if (shouldReduce) {

@@ -17,20 +17,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { Link, Outlet, useParams } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import {
   SETTINGS_TABS,
   type SettingsTabId,
 } from '../settings-tabs.config'
+import { SettingsOptionsProvider } from './settings-options-provider'
 
 export function SettingsShell() {
   const { t } = useTranslation()
   const params = useParams({ strict: false })
   const activeTab = (params.tab as SettingsTabId | undefined) ?? 'operation'
 
+  useEffect(() => {
+    const warmTabChunks = () => {
+      void import('../tab-content-panels')
+    }
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(warmTabChunks)
+      return () => window.cancelIdleCallback(idleId)
+    }
+
+    const timeoutId = window.setTimeout(warmTabChunks, 200)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
+
   return (
-    <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
+    <SettingsOptionsProvider>
+      <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden'>
       <div className='shrink-0'>
         <h1 className='text-2xl font-semibold tracking-tight'>
           {t('System Settings')}
@@ -51,6 +68,7 @@ export function SettingsShell() {
                   key={tab.id}
                   to='/system-settings/$tab'
                   params={{ tab: tab.id }}
+                  preload='intent'
                   className={cn(
                     'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     isActive
@@ -75,6 +93,7 @@ export function SettingsShell() {
                   key={tab.id}
                   to='/system-settings/$tab'
                   params={{ tab: tab.id }}
+                  preload='intent'
                   className={cn(
                     'shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
                     isActive
@@ -90,6 +109,7 @@ export function SettingsShell() {
           <Outlet />
         </div>
       </div>
-    </div>
+      </div>
+    </SettingsOptionsProvider>
   )
 }

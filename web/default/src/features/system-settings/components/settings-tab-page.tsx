@@ -19,7 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { useParams } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useStatus } from '@/hooks/use-status'
-import { useSystemOptions } from '../hooks/use-system-options'
+import { useSettingsOptionsQuery } from './settings-options-provider'
 import {
   SETTINGS_DEFAULT_TAB,
   type SettingsTabId,
@@ -28,14 +28,14 @@ import { renderSettingsTabContent } from '../tab-content-registry'
 
 export function SettingsTabPage() {
   const { t } = useTranslation()
-  const { data, isLoading } = useSystemOptions()
+  const { data, isLoading } = useSettingsOptionsQuery()
   const { status } = useStatus()
   const params = useParams({
     from: '/_authenticated/system-settings/$tab',
   })
   const tabId = (params.tab ?? SETTINGS_DEFAULT_TAB) as SettingsTabId
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <div className='text-muted-foreground flex min-h-[240px] items-center justify-center'>
         {t('Loading settings...')}
