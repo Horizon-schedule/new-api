@@ -546,20 +546,23 @@ export function RatioSettingsCard({
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as RatioTabId)}
-          className='block space-y-6'
+          className='block'
         >
-          <TabsList
-            className={`bg-background sticky top-0 z-10 grid w-full shrink-0 ${tabsGridClass}`}
-          >
-            {visibleTabs.map((tab) => (
-              <TabsTrigger key={tab} value={tab}>
-                {t(tabLabels[tab])}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          {/* Sticky shell must cover the tab bar + bottom padding; space-y gap would let scrolled content show through as a black bar. */}
+          <div className='bg-background/95 border-border/60 sticky top-0 z-20 -mx-1 mb-4 border-b px-1 pb-3 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-background/80'>
+            <TabsList
+              className={`grid w-full shrink-0 bg-transparent ${tabsGridClass}`}
+            >
+              {visibleTabs.map((tab) => (
+                <TabsTrigger key={tab} value={tab}>
+                  {t(tabLabels[tab])}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           {visibleTabs.map((tab) => (
-            <TabsContent key={tab} value={tab} className='flex-none outline-none'>
+            <TabsContent key={tab} value={tab} className='mt-0 flex-none outline-none'>
               {activeTab === tab ? renderTabContent(tab) : null}
             </TabsContent>
           ))}

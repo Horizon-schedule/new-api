@@ -1116,15 +1116,15 @@ export const ModelRatioVisualEditor = memo(
             )}
           </div>
 
-          <aside className='pointer-events-none absolute inset-y-0 right-0 hidden w-[420px] md:block xl:w-[520px]'>
-            <div className='pointer-events-auto sticky top-4'>
+          <aside className='pointer-events-none absolute top-0 right-0 hidden w-[420px] md:block xl:w-[520px]'>
+            <div className='pointer-events-auto sticky top-4 w-full'>
               {editorOpen ? (
                 <ModelPricingEditorPanel
                   onSave={handleSave}
                   onCancel={handleCancel}
                   editData={editData}
                   selectedTargetCount={selectedTargetCount}
-                  className='max-h-[min(70svh,720px)]'
+                  className='max-h-[min(70svh,720px)] w-full !flex-none'
                 />
               ) : (
                 <div className='bg-card text-muted-foreground flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 text-center'>
