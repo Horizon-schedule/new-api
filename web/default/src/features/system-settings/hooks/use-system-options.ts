@@ -24,6 +24,7 @@ export function useSystemOptions() {
     queryKey: ['system-options'],
     queryFn: getSystemOptions,
     staleTime: 5 * 60 * 1000,
+    retry: false,
   })
 }
 

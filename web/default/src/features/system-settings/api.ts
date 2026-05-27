@@ -28,9 +28,12 @@ import type {
   UpstreamRatiosResponse,
 } from './types'
 
+const silentRequest = { skipErrorHandler: true } as Record<string, unknown>
+
 export async function getSystemOptions() {
   const res = await api.get<SystemOptionsResponse>('/api/option/', {
     params: { skip_completion_ratio_meta: 'true' },
+    ...silentRequest,
   })
   return res.data
 }

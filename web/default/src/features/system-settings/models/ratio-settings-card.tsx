@@ -454,6 +454,7 @@ export function RatioSettingsCard({
     queryFn: getEnabledModels,
     staleTime: 60_000,
     enabled: activeTab === 'unset-models',
+    retry: false,
   })
   const enabledModelNames = enabledModelsResponse?.data ?? []
 

@@ -315,6 +315,7 @@ export const ModelRatioVisualEditor = memo(
       queryKey: vendorsQueryKeys.list(),
       queryFn: () => getVendors({ page_size: 1000 }),
       staleTime: 60_000,
+      retry: false,
     })
     const vendors = useMemo(
       () => vendorsData?.data?.items ?? [],
@@ -326,6 +327,7 @@ export const ModelRatioVisualEditor = memo(
       queryFn: getModelVendorIndex,
       staleTime: 5 * 60_000,
       gcTime: 30 * 60_000,
+      retry: false,
     })
     const modelVendorByName = useMemo(() => {
       const map = new Map<string, string>()
@@ -1002,8 +1004,9 @@ export const ModelRatioVisualEditor = memo(
 
     return (
       <div className='flex flex-col gap-4'>
-        <div className='grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(520px,0.9fr)]'>
-          <div className='flex min-w-0 flex-col gap-4'>
+        {/* Absolute sidebar: avoid CSS grid equal row height leaving a tall empty column when scrolling. */}
+        <div className='relative'>
+          <div className='flex min-w-0 flex-col gap-4 md:pe-[calc(420px+1rem)] xl:pe-[calc(520px+1rem)]'>
             <DataTableToolbar
               table={table}
               searchPlaceholder={t('Search models...')}
@@ -1113,32 +1116,34 @@ export const ModelRatioVisualEditor = memo(
             )}
           </div>
 
-          <div className='hidden min-w-0 md:block'>
-            {editorOpen ? (
-              <ModelPricingEditorPanel
-                onSave={handleSave}
-                onCancel={handleCancel}
-                editData={editData}
-                selectedTargetCount={selectedTargetCount}
-                className='md:sticky md:top-4 md:max-h-[min(70svh,720px)] md:self-start'
-              />
-            ) : (
-              <div className='bg-card text-muted-foreground flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 text-center md:sticky md:top-4 md:self-start'>
-                <div className='text-foreground text-base font-medium'>
-                  {t('Select a model to edit pricing')}
+          <aside className='pointer-events-none absolute inset-y-0 right-0 hidden w-[420px] md:block xl:w-[520px]'>
+            <div className='pointer-events-auto sticky top-4'>
+              {editorOpen ? (
+                <ModelPricingEditorPanel
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                  editData={editData}
+                  selectedTargetCount={selectedTargetCount}
+                  className='max-h-[min(70svh,720px)]'
+                />
+              ) : (
+                <div className='bg-card text-muted-foreground flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 text-center'>
+                  <div className='text-foreground text-base font-medium'>
+                    {t('Select a model to edit pricing')}
+                  </div>
+                  <p className='max-w-sm text-sm'>
+                    {t(
+                      'Use the full-width table to scan prices, then select a row to edit it here.'
+                    )}
+                  </p>
+                  <Button variant='outline' onClick={handleAdd}>
+                    <Plus data-icon='inline-start' />
+                    {t('Add model')}
+                  </Button>
                 </div>
-                <p className='max-w-sm text-sm'>
-                  {t(
-                    'Use the full-width table to scan prices, then select a row to edit it here.'
-                  )}
-                </p>
-                <Button variant='outline' onClick={handleAdd}>
-                  <Plus data-icon='inline-start' />
-                  {t('Add model')}
-                </Button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </aside>
         </div>
 
         <DataTableBulkActions table={table} entityName={t('model')}>

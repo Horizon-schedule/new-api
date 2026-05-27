@@ -520,7 +520,9 @@ export async function getEnabledModels(): Promise<{
   message?: string
   data?: string[]
 }> {
-  const res = await api.get('/api/channel/models_enabled')
+  const res = await api.get('/api/channel/models_enabled', {
+    skipErrorHandler: true,
+  } as Record<string, unknown>)
   return res.data
 }
 

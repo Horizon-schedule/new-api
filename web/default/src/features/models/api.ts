@@ -37,6 +37,11 @@ import type {
   ListDeploymentsResponse,
 } from './types'
 
+type ModelVendorIndexItem = { model_name: string; vendor_id: number }
+
+/** Suppress global axios toast; callers handle errors locally. */
+const silentRequest = { skipErrorHandler: true } as Record<string, unknown>
+
 // ============================================================================
 // Model CRUD Operations
 // ============================================================================
@@ -123,6 +128,7 @@ export async function getVendors(params?: {
 }): Promise<GetVendorsResponse> {
   const res = await api.get('/api/vendors/', {
     params: params || { page_size: 1000 },
+    ...silentRequest,
   })
   return res.data
 }
@@ -232,14 +238,48 @@ export async function applyUpstreamOverwrite(params: {
 
 /**
  * Lightweight model_name -> vendor_id mapping for pricing filters.
+ * Falls back to /api/models/search when vendor-index is unavailable (older backends).
  */
 export async function getModelVendorIndex(): Promise<{
   success: boolean
   message?: string
-  data?: Array<{ model_name: string; vendor_id: number }>
+  data?: ModelVendorIndexItem[]
 }> {
-  const res = await api.get('/api/models/vendor-index')
-  return res.data
+  try {
+    const res = await api.get('/api/models/vendor-index', silentRequest)
+    if (res.data?.success && Array.isArray(res.data.data)) {
+      return res.data
+    }
+  } catch {
+    // Try legacy search endpoint below
+  }
+
+  try {
+    const res = await api.get('/api/models/search', {
+      ...silentRequest,
+      params: { page_size: 2000 },
+    })
+    const items = res.data?.data?.items ?? res.data?.items ?? []
+    if (!Array.isArray(items)) {
+      return { success: true, data: [] }
+    }
+    const data = items
+      .map((item: { model_name?: string; vendor_id?: number | null }) => ({
+        model_name: item.model_name ?? '',
+        vendor_id: item.vendor_id,
+      }))
+      .filter(
+        (item): item is ModelVendorIndexItem =>
+          Boolean(item.model_name) && item.vendor_id != null && item.vendor_id > 0
+      )
+      .map((item) => ({
+        model_name: item.model_name,
+        vendor_id: item.vendor_id as number,
+      }))
+    return { success: true, data }
+  } catch {
+    return { success: true, data: [] }
+  }
 }
 
 /**
