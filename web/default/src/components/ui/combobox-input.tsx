@@ -150,9 +150,7 @@ export function ComboboxInput({
     item?.scrollIntoView({ block: 'nearest' })
   }, [highlightedIndex])
 
-  const showDropdown =
-    open &&
-    (filteredOptions.length > 0 || (allowCustomValue && searchValue.trim()))
+  const showDropdown = open
 
   return (
     <div ref={containerRef} className='relative'>

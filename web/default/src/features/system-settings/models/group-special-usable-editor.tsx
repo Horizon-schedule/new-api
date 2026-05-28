@@ -33,6 +33,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
+import { GroupNameCombobox } from './group-name-combobox'
 import {
   Select,
   SelectContent,
@@ -135,10 +136,12 @@ const OP_BADGE_MAP: Record<
 type GroupSpecialUsableRulesEditorProps = {
   value: string
   onChange: (value: string) => void
+  groupNames: string[]
 }
 
 type GroupSectionProps = {
   groupName: string
+  groupNames: string[]
   items: Rule[]
   onUpdate: (id: string, field: keyof Rule, val: string) => void
   onRemove: (id: string) => void
@@ -267,13 +270,14 @@ function GroupSection(props: GroupSectionProps) {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-                <Input
-                  className='flex-1'
+                <GroupNameCombobox
+                  groupNames={props.groupNames}
                   value={rule.targetGroup}
-                  placeholder={t('Group name')}
-                  onChange={(e) =>
-                    props.onUpdate(rule._id, 'targetGroup', e.target.value)
+                  onValueChange={(value) =>
+                    props.onUpdate(rule._id, 'targetGroup', value)
                   }
+                  placeholder={t('Select group')}
+                  className='min-w-0 flex-1'
                 />
                 {rule.op !== OP_REMOVE ? (
                   <Input
@@ -420,6 +424,7 @@ export function GroupSpecialUsableRulesEditor(
               <GroupSection
                 key={group.name}
                 groupName={group.name}
+                groupNames={props.groupNames}
                 items={group.items}
                 onUpdate={updateRule}
                 onRemove={removeRule}
@@ -430,17 +435,12 @@ export function GroupSpecialUsableRulesEditor(
           )}
 
           <div className='flex items-center justify-center gap-2 pt-2'>
-            <Input
-              className='w-[200px]'
+            <GroupNameCombobox
+              groupNames={props.groupNames}
               value={newGroupName}
-              placeholder={t('User group name')}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  addNewGroup()
-                }
-              }}
+              onValueChange={setNewGroupName}
+              placeholder={t('Select user group')}
+              className='w-full max-w-xs'
             />
             <Button variant='outline' size='sm' onClick={addNewGroup}>
               <Plus className='mr-1 h-4 w-4' />

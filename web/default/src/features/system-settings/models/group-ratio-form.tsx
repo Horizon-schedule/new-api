@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { type UseFormReturn, useWatch } from 'react-hook-form'
 import { Code2, Eye, HelpCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -47,6 +47,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { GroupRatioVisualEditor } from './group-ratio-visual-editor'
 import { GroupSpecialUsableRulesEditor } from './group-special-usable-editor'
+import { parseGroupNamesFromGroupSettings } from './group-ratio-utils'
 
 type GroupFormValues = {
   GroupRatio: string
@@ -87,8 +88,15 @@ export const GroupRatioForm = memo(function GroupRatioForm({
     setEditMode((prev) => (prev === 'visual' ? 'json' : 'visual'))
   }, [])
 
+  const groupRatio = useWatch({ control: form.control, name: 'GroupRatio' }) ?? ''
+  const userUsableGroups =
+    useWatch({ control: form.control, name: 'UserUsableGroups' }) ?? ''
   const groupSpecialUsableGroup =
     useWatch({ control: form.control, name: 'GroupSpecialUsableGroup' }) ?? ''
+  const groupNames = useMemo(
+    () => parseGroupNamesFromGroupSettings(groupRatio, userUsableGroups),
+    [groupRatio, userUsableGroups]
+  )
 
   return (
     <div className='space-y-6'>
@@ -123,38 +131,20 @@ export const GroupRatioForm = memo(function GroupRatioForm({
               onChange={(field, value) =>
                 handleFieldChange(field as keyof GroupFormValues, value)
               }
+              onDefaultUseAutoGroupChange={(value) => {
+                form.setValue('DefaultUseAutoGroup', value, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }}
             />
 
             <GroupSpecialUsableRulesEditor
               value={groupSpecialUsableGroup}
+              groupNames={groupNames}
               onChange={(value) =>
                 handleFieldChange('GroupSpecialUsableGroup', value)
               }
-            />
-
-            <FormField
-              control={form.control}
-              name='DefaultUseAutoGroup'
-              render={({ field }) => (
-                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
-                  <div className='space-y-0.5'>
-                    <FormLabel className='text-base'>
-                      {t('Default to auto groups')}
-                    </FormLabel>
-                    <FormDescription>
-                      {t(
-                        'When enabled, newly created tokens start in the first auto group.'
-                      )}
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
             />
 
             <Button onClick={form.handleSubmit(onSave)} disabled={isSaving}>
@@ -226,7 +216,7 @@ export const GroupRatioForm = memo(function GroupRatioForm({
               name='GroupGroupRatio'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('Inter-group overrides')}</FormLabel>
+                  <FormLabel>{t('Special group ratio')}</FormLabel>
                   <FormControl>
                     <Textarea rows={8} {...field} />
                   </FormControl>
@@ -247,7 +237,7 @@ export const GroupRatioForm = memo(function GroupRatioForm({
               name='AutoGroups'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('Auto assignment order')}</FormLabel>
+                  <FormLabel>{t('Auto grouping')}</FormLabel>
                   <FormControl>
                     <Textarea rows={6} {...field} />
                   </FormControl>
