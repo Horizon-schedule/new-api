@@ -1774,6 +1774,8 @@
     "Fine-tune Midjourney integration and guardrails.": "Fine-tune Midjourney integration and guardrails.",
     "Finish Time": "Finish Time",
     "First API request": "First API request",
+    "Your API key.": "Your API key.",
+    "The model you wish to use.": "The model you wish to use.",
     "First/Last Frame to Video": "First/Last Frame to Video",
     "Fix Abilities": "Fix Abilities",
     "Fixed abilities: {{success}} succeeded, {{fails}} failed": "Fixed abilities: {{success}} succeeded, {{fails}} failed",

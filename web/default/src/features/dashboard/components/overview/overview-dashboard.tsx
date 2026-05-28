@@ -98,7 +98,7 @@ interface RequestExample {
   endpoint: string
   model: string
   keyName: string
-  displayKey: string
+  displayCurl: string
   curl: string
   ready: boolean
 }
@@ -147,12 +147,6 @@ function normalizeEndpoint(sourceUrl?: string): string {
 
 function getPreferredKey(keys: ApiKey[]): ApiKey | null {
   return keys.find((item) => item.status === 1) ?? keys[0] ?? null
-}
-
-function formatDisplayKey(key?: string): string {
-  if (!key) return 'sk-...'
-  if (key.length <= 14) return key
-  return `${key.slice(0, 7)}...${key.slice(-4)}`
 }
 
 function buildCurlCommand(args: {
@@ -269,12 +263,7 @@ function RequestPreview(props: {
 }) {
   const { t } = useTranslation()
   const shouldReduceMotion = useReducedMotion()
-  const previewLines = props.example.curl.split('\n').map((line) => {
-    if (line.includes('Authorization: Bearer')) {
-      return `  -H "Authorization: Bearer ${props.example.displayKey}" \\`
-    }
-    return line
-  })
+  const previewLines = props.example.displayCurl.split('\n')
 
   return (
     <motion.div
@@ -557,8 +546,12 @@ export function OverviewDashboard() {
       endpoint,
       model,
       keyName,
-      displayKey: formatDisplayKey(apiKey),
       ready,
+      displayCurl: buildCurlCommand({
+        endpoint,
+        apiKey: t('Your API key.'),
+        model: t('The model you wish to use.'),
+      }),
       curl: buildCurlCommand({
         endpoint,
         apiKey: apiKey || 'sk-...',

@@ -1774,6 +1774,8 @@
     "Fine-tune Midjourney integration and guardrails.": "Тонкая настройка интеграции Midjourney и защитных механизмов.",
     "Finish Time": "Время завершения",
     "First API request": "Первый API-запрос",
+    "Your API key.": "Ваш API-ключ.",
+    "The model you wish to use.": "Модель, которую вы хотите использовать.",
     "First/Last Frame to Video": "Первый/последний кадр в видео",
     "Fix Abilities": "Исправить способности",
     "Fixed abilities: {{success}} succeeded, {{fails}} failed": "Исправление способностей: {{success}} успешно, {{fails}} неудачно",

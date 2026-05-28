@@ -1774,6 +1774,8 @@
     "Fine-tune Midjourney integration and guardrails.": "Tinh chỉnh tích hợp Midjourney và các cơ chế bảo vệ.",
     "Finish Time": "Thời gian hoàn thành",
     "First API request": "Yêu cầu API đầu tiên",
+    "Your API key.": "Khóa API của bạn.",
+    "The model you wish to use.": "Mô hình bạn muốn sử dụng.",
     "First/Last Frame to Video": "Khung đầu/cuối sang video",
     "Fix Abilities": "Sửa Kỹ năng",
     "Fixed abilities: {{success}} succeeded, {{fails}} failed": "Sửa khả năng: {{success}} thành công, {{fails}} thất bại",

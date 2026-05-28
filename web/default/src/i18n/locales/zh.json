@@ -1774,6 +1774,8 @@
     "Fine-tune Midjourney integration and guardrails.": "微调 Midjourney 集成和防护栏。",
     "Finish Time": "完成时间",
     "First API request": "首个 API 请求",
+    "Your API key.": "您的 API 密钥。",
+    "The model you wish to use.": "您要使用的模型。",
     "First/Last Frame to Video": "首尾生视频",
     "Fix Abilities": "修复能力",
     "Fixed abilities: {{success}} succeeded, {{fails}} failed": "修复能力：{{success}} 个成功，{{fails}} 个失败",
