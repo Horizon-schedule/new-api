@@ -50,7 +50,7 @@ import {
   CardStaggerContainer,
   CardStaggerItem,
 } from '@/components/page-transition'
-import { fetchTokenKey, getApiKeys } from '@/features/keys/api'
+import { getApiKeys } from '@/features/keys/api'
 import type { ApiKey } from '@/features/keys/types'
 import { useApiInfo } from '../../hooks/use-status-data'
 import { PerformanceHealthPanel } from './performance-health-panel'
@@ -99,7 +99,6 @@ interface RequestExample {
   model: string
   keyName: string
   displayCurl: string
-  curl: string
   ready: boolean
 }
 
@@ -299,13 +298,13 @@ function RequestPreview(props: {
         </div>
         {props.example.ready ? (
           <CopyButton
-            value={props.example.curl}
+            value={props.example.displayCurl}
             variant='outline'
             size='sm'
             className='h-7 gap-1.5 px-2 text-xs'
-            tooltip={t('Copy ready-to-run curl')}
+            tooltip={t('Copy request example')}
             successTooltip={t('Copied!')}
-            aria-label={t('Copy ready-to-run curl')}
+            aria-label={t('Copy request example')}
           >
             {t('Copy')}
           </CopyButton>
@@ -440,17 +439,6 @@ export function OverviewDashboard() {
     [apiKeysQuery.data]
   )
 
-  const realKeyQuery = useQuery({
-    queryKey: ['dashboard', 'overview', 'token-key', preferredKey?.id],
-    queryFn: async () => {
-      if (!preferredKey?.id) return ''
-      const result = await fetchTokenKey(preferredKey.id)
-      return result.success && result.data?.key ? `sk-${result.data.key}` : ''
-    },
-    enabled: Boolean(preferredKey?.id),
-    staleTime: 5 * 60 * 1000,
-  })
-
   const startSteps = useMemo<StartStep[]>(
     () => [
       {
@@ -538,9 +526,8 @@ export function OverviewDashboard() {
   const requestExample = useMemo<RequestExample>(() => {
     const endpoint = normalizeEndpoint(apiInfoItems[0]?.url)
     const model = modelsQuery.data?.[0] ?? 'gpt-4o-mini'
-    const apiKey = realKeyQuery.data ?? ''
     const keyName = preferredKey?.name ?? t('No API key yet')
-    const ready = Boolean(apiKey && model)
+    const ready = Boolean(preferredKey && model)
 
     return {
       endpoint,
@@ -552,13 +539,8 @@ export function OverviewDashboard() {
         apiKey: t('Your API key.'),
         model: t('The model you wish to use.'),
       }),
-      curl: buildCurlCommand({
-        endpoint,
-        apiKey: apiKey || 'sk-...',
-        model,
-      }),
     }
-  }, [apiInfoItems, modelsQuery.data, preferredKey, realKeyQuery.data, t])
+  }, [apiInfoItems, modelsQuery.data, preferredKey, t])
 
   const completedStepCount = startSteps.filter((step) => step.completed).length
   const setupComplete = completedStepCount === startSteps.length
