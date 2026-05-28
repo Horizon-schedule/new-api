@@ -48,8 +48,9 @@ const OP_ADD = 'add' as const
 const OP_REMOVE = 'remove' as const
 const OP_APPEND = 'append' as const
 const sectionCardClassName =
-  'relative shadow-sm ring-0 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:border before:border-border/90'
+  'relative overflow-visible shadow-sm ring-0 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:border before:border-border/90'
 const sectionHeaderClassName = 'border-b bg-muted/20'
+const sectionTitleClassName = 'text-base font-semibold tracking-tight'
 
 type OpType = typeof OP_ADD | typeof OP_REMOVE | typeof OP_APPEND
 
@@ -406,7 +407,9 @@ export function GroupSpecialUsableRulesEditor(
   return (
     <Card className={sectionCardClassName}>
       <CardHeader className={sectionHeaderClassName}>
-        <CardTitle>{t('Special usable group rules')}</CardTitle>
+        <CardTitle className={sectionTitleClassName}>
+          {t('Special usable group rules')}
+        </CardTitle>
         <CardDescription>
           {t(
             'Define per-group rules to add, remove, or append selectable groups for specific user groups.'

@@ -17,10 +17,45 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+
+type DropdownPosition = {
+  top: number
+  left: number
+  width: number
+  maxHeight: number
+  placement: 'bottom' | 'top'
+}
+
+function getDropdownPosition(input: HTMLInputElement): DropdownPosition {
+  const rect = input.getBoundingClientRect()
+  const viewportPadding = 8
+  const gap = 4
+  const preferredMaxHeight = 240
+  const spaceBelow = window.innerHeight - rect.bottom - viewportPadding
+  const spaceAbove = rect.top - viewportPadding
+  const placement =
+    spaceBelow < 160 && spaceAbove > spaceBelow ? 'top' : 'bottom'
+  const maxHeight = Math.min(
+    preferredMaxHeight,
+    Math.max(120, placement === 'bottom' ? spaceBelow - gap : spaceAbove - gap)
+  )
+
+  return {
+    top:
+      placement === 'bottom'
+        ? rect.bottom + gap
+        : rect.top - gap,
+    left: rect.left,
+    width: rect.width,
+    maxHeight,
+    placement,
+  }
+}
 
 export type ComboboxInputOption = {
   value: string
@@ -54,8 +89,11 @@ export function ComboboxInput({
   const [searchValue, setSearchValue] = React.useState('')
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1)
   const containerRef = React.useRef<HTMLDivElement>(null)
+  const dropdownRef = React.useRef<HTMLDivElement>(null)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const listRef = React.useRef<HTMLUListElement>(null)
+  const [dropdownPosition, setDropdownPosition] =
+    React.useState<DropdownPosition | null>(null)
   const selectedOption = React.useMemo(
     () => options.find((option) => option.value === value),
     [options, value]
@@ -77,18 +115,43 @@ export function ComboboxInput({
     setHighlightedIndex(-1)
   }, [filteredOptions])
 
+  const updateDropdownPosition = React.useCallback(() => {
+    if (!inputRef.current) return
+    setDropdownPosition(getDropdownPosition(inputRef.current))
+  }, [])
+
+  React.useEffect(() => {
+    if (!open) {
+      setDropdownPosition(null)
+      return
+    }
+
+    updateDropdownPosition()
+
+    const handleViewportChange = () => updateDropdownPosition()
+    window.addEventListener('resize', handleViewportChange)
+    window.addEventListener('scroll', handleViewportChange, true)
+
+    return () => {
+      window.removeEventListener('resize', handleViewportChange)
+      window.removeEventListener('scroll', handleViewportChange, true)
+    }
+  }, [open, updateDropdownPosition])
+
   // Handle click outside to close
   React.useEffect(() => {
     if (!open) return
 
     const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node
       if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        containerRef.current?.contains(target) ||
+        dropdownRef.current?.contains(target)
       ) {
-        setOpen(false)
-        setSearchValue('')
+        return
       }
+      setOpen(false)
+      setSearchValue('')
     }
 
     document.addEventListener('mousedown', handleClickOutside)
@@ -150,7 +213,78 @@ export function ComboboxInput({
     item?.scrollIntoView({ block: 'nearest' })
   }, [highlightedIndex])
 
-  const showDropdown = open
+  const showDropdown = open && dropdownPosition
+
+  const dropdownContent =
+    showDropdown && dropdownPosition
+      ? createPortal(
+          <div
+            ref={dropdownRef}
+            style={{
+              position: 'fixed',
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+              zIndex: 9999,
+              transform:
+                dropdownPosition.placement === 'top'
+                  ? 'translateY(-100%)'
+                  : undefined,
+            }}
+            className='bg-popover text-popover-foreground rounded-md border shadow-md'
+          >
+            {filteredOptions.length > 0 ? (
+              <ul
+                ref={listRef}
+                role='listbox'
+                style={{ maxHeight: dropdownPosition.maxHeight }}
+                className='overflow-y-auto p-1'
+              >
+                {filteredOptions.map((option, index) => (
+                  <li
+                    key={option.value}
+                    role='option'
+                    aria-selected={value === option.value}
+                    data-highlighted={index === highlightedIndex}
+                    className={cn(
+                      'relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm select-none',
+                      index === highlightedIndex &&
+                        'bg-accent text-accent-foreground',
+                      value === option.value && 'font-medium'
+                    )}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      handleSelect(option.value)
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        'size-4 shrink-0',
+                        value === option.value ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
+                    {option.icon && <span>{option.icon}</span>}
+                    <span className='truncate'>{option.label}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className='px-2 py-6 text-center text-sm'>
+                {t(emptyText)}
+                {allowCustomValue && searchValue.trim() && (
+                  <div className='text-muted-foreground mt-1 text-xs'>
+                    {t('Press Enter to use "{{value}}"', {
+                      value: searchValue.trim(),
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>,
+          document.body
+        )
+      : null
 
   return (
     <div ref={containerRef} className='relative'>
@@ -182,57 +316,7 @@ export function ComboboxInput({
       />
       <ChevronsUpDown className='pointer-events-none absolute top-1/2 right-3 size-4 shrink-0 -translate-y-1/2 opacity-50' />
 
-      {showDropdown && (
-        <div className='bg-popover text-popover-foreground absolute top-full z-100 mt-1 w-full rounded-md border shadow-md'>
-          {filteredOptions.length > 0 ? (
-            <ul
-              ref={listRef}
-              role='listbox'
-              className='max-h-[200px] overflow-y-auto p-1'
-            >
-              {filteredOptions.map((option, index) => (
-                <li
-                  key={option.value}
-                  role='option'
-                  aria-selected={value === option.value}
-                  data-highlighted={index === highlightedIndex}
-                  className={cn(
-                    'relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm select-none',
-                    index === highlightedIndex &&
-                      'bg-accent text-accent-foreground',
-                    value === option.value && 'font-medium'
-                  )}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  onMouseDown={(e) => {
-                    e.preventDefault() // Prevent blur
-                    handleSelect(option.value)
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      'size-4 shrink-0',
-                      value === option.value ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  {option.icon && <span>{option.icon}</span>}
-                  <span className='truncate'>{option.label}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className='px-2 py-6 text-center text-sm'>
-              {t(emptyText)}
-              {allowCustomValue && searchValue.trim() && (
-                <div className='text-muted-foreground mt-1 text-xs'>
-                  {t('Press Enter to use "{{value}}"', {
-                    value: searchValue.trim(),
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      {dropdownContent}
     </div>
   )
 }

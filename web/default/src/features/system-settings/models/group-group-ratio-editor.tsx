@@ -38,8 +38,9 @@ import { GroupNameCombobox } from './group-name-combobox'
 import { safeJsonParse } from '../utils/json-parser'
 
 const sectionCardClassName =
-  'relative shadow-sm ring-0 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:border before:border-border/90'
+  'relative overflow-visible shadow-sm ring-0 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:border before:border-border/90'
 const sectionHeaderClassName = 'border-b bg-muted/20'
+const sectionTitleClassName = 'text-base font-semibold tracking-tight'
 
 type Rule = {
   _id: string
@@ -286,7 +287,9 @@ export function GroupGroupRatioRulesEditor({
   return (
     <Card className={sectionCardClassName}>
       <CardHeader className={sectionHeaderClassName}>
-        <CardTitle>{t('Special group ratio')}</CardTitle>
+        <CardTitle className={sectionTitleClassName}>
+          {t('Special group ratio')}
+        </CardTitle>
         <CardDescription>
           {t(
             'When users in one group use tokens from another group, set special ratio overrides. Example: vip users get 0.5x when using the default group.'

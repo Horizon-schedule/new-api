@@ -122,8 +122,9 @@ function sourceAutoGroupsSignature(autoGroups: string): string {
 }
 
 const sectionCardClassName =
-  'relative shadow-sm ring-0 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:border before:border-border/90'
+  'relative overflow-visible shadow-sm ring-0 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:border before:border-border/90'
 const sectionHeaderClassName = 'border-b bg-muted/20'
+const sectionTitleClassName = 'text-base font-semibold tracking-tight'
 
 let groupPricingIdCounter = 0
 function createGroupPricingId() {
@@ -329,7 +330,9 @@ export const GroupRatioVisualEditor = memo(function GroupRatioVisualEditor({
       {/* Topup Group Ratios */}
       <Card className={sectionCardClassName}>
         <CardHeader className={sectionHeaderClassName}>
-          <CardTitle>{t('Top-up group ratios')}</CardTitle>
+          <CardTitle className={sectionTitleClassName}>
+            {t('Top-up group ratios')}
+          </CardTitle>
           <CardDescription>
             {t('Multipliers for recharge pricing based on user groups.')}
           </CardDescription>
@@ -514,7 +517,9 @@ function GroupPricingTable({
       <CardHeader className={sectionHeaderClassName}>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
           <div>
-            <CardTitle>{t('Group management')}</CardTitle>
+            <CardTitle className={sectionTitleClassName}>
+              {t('Group management')}
+            </CardTitle>
             <CardDescription>
               {t(
                 'Ratios are billing multipliers. Check "User selectable" to let users pick the group when creating tokens.'
@@ -713,7 +718,9 @@ function AutoGroupListSection({
   return (
     <Card className={sectionCardClassName}>
       <CardHeader className={sectionHeaderClassName}>
-        <CardTitle>{t('Auto grouping')}</CardTitle>
+        <CardTitle className={sectionTitleClassName}>
+          {t('Auto grouping')}
+        </CardTitle>
         <CardDescription>
           {t(
             'When the token group is set to auto, try available groups in the following order. Groups listed first have higher priority.'
