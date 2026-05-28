@@ -291,6 +291,302 @@ For commercial licensing, please contact support@quantumnous.com
   --sidebar-ring: oklch(0.6359 0.1699 307.95);
 }
 
+/* ── Indigo (Tailwind / shadcn classic) ───────────────────────────────── */
+[data-theme-preset='indigo'] {
+  --primary: oklch(0.511 0.262 276.966);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.623 0.214 259.815);
+  --secondary-foreground: oklch(1 0 0);
+  --ring: oklch(0.511 0.262 276.966);
+  --chart-1: oklch(0.511 0.262 276.966);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.707 0.165 254.624);
+  --chart-4: oklch(0.809 0.105 251.813);
+  --chart-5: oklch(0.932 0.032 255.585);
+  --sidebar-primary: oklch(0.511 0.262 276.966);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.511 0.262 276.966);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.511 0.262 276.966);
+  --radius: 0.5rem;
+}
+.dark [data-theme-preset='indigo'] {
+  --primary: oklch(0.585 0.233 277.117);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.623 0.214 259.815);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --ring: oklch(0.585 0.233 277.117);
+  --chart-1: oklch(0.585 0.233 277.117);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.707 0.165 254.624);
+  --chart-4: oklch(0.809 0.105 251.813);
+  --chart-5: oklch(0.932 0.032 255.585);
+  --sidebar-primary: oklch(0.585 0.233 277.117);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.585 0.233 277.117);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.585 0.233 277.117);
+}
+
+/* ── Emerald (growth / finance dashboards) ────────────────────────────── */
+[data-theme-preset='emerald'] {
+  --primary: oklch(0.596 0.145 163.225);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.696 0.17 162.48);
+  --secondary-foreground: oklch(0.262 0.051 172.552);
+  --ring: oklch(0.596 0.145 163.225);
+  --chart-1: oklch(0.596 0.145 163.225);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.765 0.177 163.223);
+  --chart-4: oklch(0.845 0.143 164.978);
+  --chart-5: oklch(0.95 0.052 163.051);
+  --sidebar-primary: oklch(0.596 0.145 163.225);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.596 0.145 163.225);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.596 0.145 163.225);
+  --radius: 0.5rem;
+}
+.dark [data-theme-preset='emerald'] {
+  --primary: oklch(0.696 0.17 162.48);
+  --primary-foreground: oklch(0.129 0.042 264.695);
+  --secondary: oklch(0.765 0.177 163.223);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --ring: oklch(0.696 0.17 162.48);
+  --chart-1: oklch(0.696 0.17 162.48);
+  --chart-2: oklch(0.765 0.177 163.223);
+  --chart-3: oklch(0.845 0.143 164.978);
+  --chart-4: oklch(0.905 0.093 164.15);
+  --chart-5: oklch(0.95 0.052 163.051);
+  --sidebar-primary: oklch(0.696 0.17 162.48);
+  --sidebar-primary-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-accent: oklch(0.696 0.17 162.48);
+  --sidebar-accent-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-ring: oklch(0.696 0.17 162.48);
+}
+
+/* ── Amber (warm SaaS / analytics) ──────────────────────────────────── */
+[data-theme-preset='amber'] {
+  --primary: oklch(0.769 0.188 70.08);
+  --primary-foreground: oklch(0.279 0.077 45.635);
+  --secondary: oklch(0.828 0.189 84.429);
+  --secondary-foreground: oklch(0.279 0.077 45.635);
+  --ring: oklch(0.769 0.188 70.08);
+  --chart-1: oklch(0.769 0.188 70.08);
+  --chart-2: oklch(0.828 0.189 84.429);
+  --chart-3: oklch(0.879 0.169 91.605);
+  --chart-4: oklch(0.924 0.12 95.746);
+  --chart-5: oklch(0.962 0.059 95.617);
+  --sidebar-primary: oklch(0.769 0.188 70.08);
+  --sidebar-primary-foreground: oklch(0.279 0.077 45.635);
+  --sidebar-accent: oklch(0.769 0.188 70.08);
+  --sidebar-accent-foreground: oklch(0.279 0.077 45.635);
+  --sidebar-ring: oklch(0.769 0.188 70.08);
+  --radius: 0.75rem;
+}
+.dark [data-theme-preset='amber'] {
+  --primary: oklch(0.828 0.189 84.429);
+  --primary-foreground: oklch(0.279 0.077 45.635);
+  --secondary: oklch(0.879 0.169 91.605);
+  --secondary-foreground: oklch(0.279 0.077 45.635);
+  --ring: oklch(0.828 0.189 84.429);
+  --chart-1: oklch(0.828 0.189 84.429);
+  --chart-2: oklch(0.879 0.169 91.605);
+  --chart-3: oklch(0.924 0.12 95.746);
+  --chart-4: oklch(0.962 0.059 95.617);
+  --chart-5: oklch(0.987 0.022 95.277);
+  --sidebar-primary: oklch(0.828 0.189 84.429);
+  --sidebar-primary-foreground: oklch(0.279 0.077 45.635);
+  --sidebar-accent: oklch(0.828 0.189 84.429);
+  --sidebar-accent-foreground: oklch(0.279 0.077 45.635);
+  --sidebar-ring: oklch(0.828 0.189 84.429);
+}
+
+/* ── Crimson (bold red brand) ─────────────────────────────────────────── */
+[data-theme-preset='crimson'] {
+  --primary: oklch(0.577 0.245 27.325);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.704 0.191 22.216);
+  --secondary-foreground: oklch(1 0 0);
+  --ring: oklch(0.577 0.245 27.325);
+  --chart-1: oklch(0.577 0.245 27.325);
+  --chart-2: oklch(0.704 0.191 22.216);
+  --chart-3: oklch(0.808 0.114 19.571);
+  --chart-4: oklch(0.885 0.062 18.334);
+  --chart-5: oklch(0.943 0.029 17.717);
+  --sidebar-primary: oklch(0.577 0.245 27.325);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.577 0.245 27.325);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.577 0.245 27.325);
+  --radius: 0.5rem;
+}
+.dark [data-theme-preset='crimson'] {
+  --primary: oklch(0.637 0.237 25.331);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.704 0.191 22.216);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --ring: oklch(0.637 0.237 25.331);
+  --chart-1: oklch(0.637 0.237 25.331);
+  --chart-2: oklch(0.704 0.191 22.216);
+  --chart-3: oklch(0.808 0.114 19.571);
+  --chart-4: oklch(0.885 0.062 18.334);
+  --chart-5: oklch(0.943 0.029 17.717);
+  --sidebar-primary: oklch(0.637 0.237 25.331);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.637 0.237 25.331);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.637 0.237 25.331);
+}
+
+/* ── Midnight (Linear / enterprise blue) ──────────────────────────────── */
+[data-theme-preset='midnight'] {
+  --primary: oklch(0.379 0.146 265.522);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.488 0.243 264.376);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --ring: oklch(0.379 0.146 265.522);
+  --chart-1: oklch(0.379 0.146 265.522);
+  --chart-2: oklch(0.488 0.243 264.376);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.623 0.214 259.815);
+  --chart-5: oklch(0.809 0.105 251.813);
+  --sidebar-primary: oklch(0.379 0.146 265.522);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.379 0.146 265.522);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-ring: oklch(0.379 0.146 265.522);
+  --radius: 0.3rem;
+}
+.dark [data-theme-preset='midnight'] {
+  --primary: oklch(0.488 0.243 264.376);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.546 0.245 262.881);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --ring: oklch(0.488 0.243 264.376);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.546 0.245 262.881);
+  --chart-3: oklch(0.623 0.214 259.815);
+  --chart-4: oklch(0.707 0.165 254.624);
+  --chart-5: oklch(0.932 0.032 255.585);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.488 0.243 264.376);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-ring: oklch(0.488 0.243 264.376);
+}
+
+/* ── Coral (warm modern SaaS) ─────────────────────────────────────────── */
+[data-theme-preset='coral'] {
+  --primary: oklch(0.645 0.246 16.439);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.75 0.183 55.934);
+  --secondary-foreground: oklch(0.2686 0.0032 34.85);
+  --ring: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.645 0.246 16.439);
+  --chart-2: oklch(0.75 0.183 55.934);
+  --chart-3: oklch(0.808 0.114 19.571);
+  --chart-4: oklch(0.879 0.169 91.605);
+  --chart-5: oklch(0.9429 0.0283 5.52);
+  --sidebar-primary: oklch(0.645 0.246 16.439);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.645 0.246 16.439);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.645 0.246 16.439);
+  --radius: 0.75rem;
+}
+.dark [data-theme-preset='coral'] {
+  --primary: oklch(0.704 0.191 22.216);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.75 0.183 55.934);
+  --secondary-foreground: oklch(0.9227 0.0029 34.49);
+  --ring: oklch(0.704 0.191 22.216);
+  --chart-1: oklch(0.704 0.191 22.216);
+  --chart-2: oklch(0.75 0.183 55.934);
+  --chart-3: oklch(0.808 0.114 19.571);
+  --chart-4: oklch(0.879 0.169 91.605);
+  --chart-5: oklch(0.9429 0.0283 5.52);
+  --sidebar-primary: oklch(0.704 0.191 22.216);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.704 0.191 22.216);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.704 0.191 22.216);
+}
+
+/* ── Violet (Discord / creative tools) ────────────────────────────────── */
+[data-theme-preset='violet'] {
+  --primary: oklch(0.541 0.281 293.009);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.702 0.183 293.541);
+  --secondary-foreground: oklch(1 0 0);
+  --ring: oklch(0.541 0.281 293.009);
+  --chart-1: oklch(0.541 0.281 293.009);
+  --chart-2: oklch(0.702 0.183 293.541);
+  --chart-3: oklch(0.811 0.111 293.571);
+  --chart-4: oklch(0.894 0.057 293.283);
+  --chart-5: oklch(0.962 0.018 293.756);
+  --sidebar-primary: oklch(0.541 0.281 293.009);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.541 0.281 293.009);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.541 0.281 293.009);
+  --radius: 0.5rem;
+}
+.dark [data-theme-preset='violet'] {
+  --primary: oklch(0.606 0.25 292.717);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.702 0.183 293.541);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --ring: oklch(0.606 0.25 292.717);
+  --chart-1: oklch(0.606 0.25 292.717);
+  --chart-2: oklch(0.702 0.183 293.541);
+  --chart-3: oklch(0.811 0.111 293.571);
+  --chart-4: oklch(0.894 0.057 293.283);
+  --chart-5: oklch(0.962 0.018 293.756);
+  --sidebar-primary: oklch(0.606 0.25 292.717);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.606 0.25 292.717);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-ring: oklch(0.606 0.25 292.717);
+}
+
+/* ── Slate (Notion / neutral professional) ────────────────────────────── */
+[data-theme-preset='slate'] {
+  --primary: oklch(0.446 0.043 257.281);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.554 0.046 257.417);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --ring: oklch(0.446 0.043 257.281);
+  --chart-1: oklch(0.446 0.043 257.281);
+  --chart-2: oklch(0.554 0.046 257.417);
+  --chart-3: oklch(0.704 0.04 256.788);
+  --chart-4: oklch(0.869 0.022 252.894);
+  --chart-5: oklch(0.968 0.007 247.896);
+  --sidebar-primary: oklch(0.446 0.043 257.281);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.446 0.043 257.281);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-ring: oklch(0.446 0.043 257.281);
+  --radius: 0.3rem;
+}
+.dark [data-theme-preset='slate'] {
+  --primary: oklch(0.704 0.04 256.788);
+  --primary-foreground: oklch(0.129 0.042 264.695);
+  --secondary: oklch(0.554 0.046 257.417);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --ring: oklch(0.704 0.04 256.788);
+  --chart-1: oklch(0.704 0.04 256.788);
+  --chart-2: oklch(0.554 0.046 257.417);
+  --chart-3: oklch(0.869 0.022 252.894);
+  --chart-4: oklch(0.929 0.013 255.508);
+  --chart-5: oklch(0.968 0.007 247.896);
+  --sidebar-primary: oklch(0.704 0.04 256.788);
+  --sidebar-primary-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-accent: oklch(0.704 0.04 256.788);
+  --sidebar-accent-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
 /* ── Semantic surface bridge ──────────────────────────────────────────── */
 /* Color presets should tint the surfaces most components actually use, not
  * only primary buttons. These derived tokens keep the app theme-aware without

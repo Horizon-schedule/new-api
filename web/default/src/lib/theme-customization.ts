@@ -64,6 +64,46 @@ export const THEME_PRESETS = [
     name: 'Lavender Dream',
     swatches: ['oklch(0.5709 0.1808 306.89)', 'oklch(0.811 0.0589 201.14)'],
   },
+  {
+    value: 'indigo',
+    name: 'Indigo',
+    swatches: ['oklch(0.511 0.262 276.966)', 'oklch(0.623 0.214 259.815)'],
+  },
+  {
+    value: 'emerald',
+    name: 'Emerald',
+    swatches: ['oklch(0.596 0.145 163.225)', 'oklch(0.696 0.17 162.48)'],
+  },
+  {
+    value: 'amber',
+    name: 'Amber',
+    swatches: ['oklch(0.769 0.188 70.08)', 'oklch(0.828 0.189 84.429)'],
+  },
+  {
+    value: 'crimson',
+    name: 'Crimson',
+    swatches: ['oklch(0.577 0.245 27.325)', 'oklch(0.704 0.191 22.216)'],
+  },
+  {
+    value: 'midnight',
+    name: 'Midnight',
+    swatches: ['oklch(0.379 0.146 265.522)', 'oklch(0.488 0.243 264.376)'],
+  },
+  {
+    value: 'coral',
+    name: 'Coral',
+    swatches: ['oklch(0.645 0.246 16.439)', 'oklch(0.75 0.183 55.934)'],
+  },
+  {
+    value: 'violet',
+    name: 'Violet',
+    swatches: ['oklch(0.541 0.281 293.009)', 'oklch(0.702 0.183 293.541)'],
+  },
+  {
+    value: 'slate',
+    name: 'Slate',
+    swatches: ['oklch(0.446 0.043 257.281)', 'oklch(0.554 0.046 257.417)'],
+  },
 ] as const
 
 export type ThemePreset = (typeof THEME_PRESETS)[number]['value']
