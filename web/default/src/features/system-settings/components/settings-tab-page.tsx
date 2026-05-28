@@ -57,7 +57,7 @@ export function SettingsTabPage() {
           </AlertDescription>
         </Alert>
       ) : null}
-      <div className='faded-bottom relative min-h-0 flex-1 overflow-y-auto overscroll-y-contain scroll-smooth pb-12'>
+      <div className='relative min-h-0 flex-1 overflow-y-auto overscroll-y-contain scroll-smooth pb-12'>
         <div key={tabId} className='space-y-4'>
           {content}
         </div>

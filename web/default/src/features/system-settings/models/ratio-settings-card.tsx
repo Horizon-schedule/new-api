@@ -546,12 +546,12 @@ export function RatioSettingsCard({
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as RatioTabId)}
-          className='block'
+          className='!flex !flex-col !gap-0'
         >
-          {/* Sticky shell must cover the tab bar + bottom padding; space-y gap would let scrolled content show through as a black bar. */}
-          <div className='bg-background/95 border-border/60 sticky top-0 z-20 -mx-1 mb-4 border-b px-1 pb-3 shadow-sm backdrop-blur-sm supports-[backdrop-filter]:bg-background/80'>
+          {/* Tabs 默认 flex gap-2 会在吸顶栏与内容之间留出缝隙，滚动时透出底层形成黑杠 */}
+          <div className='bg-background border-border/60 sticky top-0 z-30 -mx-1 mb-4 border-b px-1 shadow-[0_10px_20px_12px_var(--background)]'>
             <TabsList
-              className={`grid w-full shrink-0 bg-transparent ${tabsGridClass}`}
+              className={`grid h-auto w-full shrink-0 bg-muted/40 p-1 ${tabsGridClass}`}
             >
               {visibleTabs.map((tab) => (
                 <TabsTrigger key={tab} value={tab}>
@@ -562,7 +562,7 @@ export function RatioSettingsCard({
           </div>
 
           {visibleTabs.map((tab) => (
-            <TabsContent key={tab} value={tab} className='mt-0 flex-none outline-none'>
+            <TabsContent key={tab} value={tab} className='mt-0 !flex-none outline-none'>
               {activeTab === tab ? renderTabContent(tab) : null}
             </TabsContent>
           ))}

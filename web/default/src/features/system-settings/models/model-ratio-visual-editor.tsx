@@ -1117,7 +1117,7 @@ export const ModelRatioVisualEditor = memo(
           </div>
 
           <aside className='pointer-events-none absolute top-0 right-0 hidden w-[420px] md:block xl:w-[520px]'>
-            <div className='pointer-events-auto sticky top-4 w-full'>
+            <div className='pointer-events-auto sticky top-14 w-full md:top-16'>
               {editorOpen ? (
                 <ModelPricingEditorPanel
                   onSave={handleSave}
