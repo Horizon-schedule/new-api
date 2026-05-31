@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -123,6 +123,14 @@ function serializeRules(rules: Rule[]): string {
   return Object.keys(nested).length === 0
     ? '{}'
     : JSON.stringify(nested, null, 2)
+}
+
+function rulesSignature(rules: Rule[]): string {
+  return JSON.stringify(nestRules(rules))
+}
+
+function sourceValueSignature(value: string): string {
+  return JSON.stringify(safeParseJson(value))
 }
 
 const OP_BADGE_MAP: Record<
@@ -319,6 +327,16 @@ export function GroupSpecialUsableRulesEditor(
     flattenRules(safeParseJson(props.value))
   )
   const [newGroupName, setNewGroupName] = useState('')
+
+  useEffect(() => {
+    const incomingSignature = sourceValueSignature(props.value)
+    setRules((currentRules) => {
+      if (rulesSignature(currentRules) === incomingSignature) {
+        return currentRules
+      }
+      return flattenRules(safeParseJson(props.value))
+    })
+  }, [props.value])
 
   const { onChange } = props
   const emitChange = useCallback(

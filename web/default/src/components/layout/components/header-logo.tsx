@@ -16,34 +16,36 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface HeaderLogoProps {
   src: string
   alt?: string
-  loading: boolean
-  logoLoaded: boolean
   className?: string
 }
 
 /**
- * Logo component for header with loading state
- * Shows image only when fully loaded for smooth UX
+ * Logo component for header with fade-in on load.
+ * Uses native img onLoad/onError so external URLs still display even when
+ * Image() preload is blocked by cross-origin restrictions.
  */
-export function HeaderLogo({
-  src,
-  alt = 'logo',
-  loading,
-  logoLoaded,
-  className,
-}: HeaderLogoProps) {
+export function HeaderLogo({ src, alt = 'logo', className }: HeaderLogoProps) {
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    setReady(false)
+  }, [src])
+
   return (
     <img
       src={src}
       alt={alt}
+      onLoad={() => setReady(true)}
+      onError={() => setReady(true)}
       className={cn(
         'size-full rounded-xl object-contain transition-opacity duration-200',
-        !loading && logoLoaded ? 'opacity-100' : 'opacity-0',
+        ready ? 'opacity-100' : 'opacity-0',
         className
       )}
     />

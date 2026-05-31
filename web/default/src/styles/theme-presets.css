@@ -588,18 +588,15 @@ For commercial licensing, please contact support@quantumnous.com
 }
 
 /* ── Semantic surface bridge ──────────────────────────────────────────── */
-/* Color presets should tint the surfaces most components actually use, not
- * only primary buttons. These derived tokens keep the app theme-aware without
- * duplicating per-component dark-mode overrides. */
+/* Color presets tint surfaces lightly while keeping body text neutral.
+ * Full-strength primary/secondary are reserved for buttons and .text-preset-highlight. */
 [data-theme-preset]:not([data-theme-preset='default']) {
+  --highlight-from: var(--primary);
+  --highlight-to: var(--secondary);
   --card: color-mix(in oklch, var(--primary) 3%, var(--background));
   --popover: color-mix(in oklch, var(--primary) 5%, var(--background));
   --muted: color-mix(in oklch, var(--primary) 7%, var(--background));
-  --muted-foreground: color-mix(
-    in oklch,
-    var(--foreground) 68%,
-    var(--primary)
-  );
+  --muted-foreground: color-mix(in oklch, var(--foreground) 52%, var(--background));
   --accent: color-mix(in oklch, var(--primary) 14%, var(--background));
   --accent-foreground: var(--foreground);
   --border: color-mix(in oklch, var(--primary) 20%, var(--background));
@@ -617,17 +614,35 @@ For commercial licensing, please contact support@quantumnous.com
   --card: color-mix(in oklch, var(--primary) 8%, var(--background));
   --popover: color-mix(in oklch, var(--primary) 12%, var(--background));
   --muted: color-mix(in oklch, var(--primary) 12%, var(--background));
-  --muted-foreground: color-mix(
-    in oklch,
-    var(--foreground) 74%,
-    var(--primary)
-  );
+  --muted-foreground: color-mix(in oklch, var(--foreground) 58%, var(--background));
   --accent: color-mix(in oklch, var(--primary) 18%, var(--background));
   --border: color-mix(in oklch, var(--primary) 24%, var(--background));
   --input: color-mix(in oklch, var(--primary) 28%, var(--background));
   --sidebar: color-mix(in oklch, var(--primary) 5%, var(--background));
   --sidebar-accent: color-mix(in oklch, var(--primary) 18%, var(--background));
   --sidebar-border: color-mix(in oklch, var(--primary) 22%, var(--background));
+}
+
+/* Emphasis gradient — uses full-strength preset colors, distinct from tinted surfaces */
+.text-preset-highlight {
+  background-image: linear-gradient(
+    105deg,
+    var(--highlight-from, var(--primary)),
+    var(--highlight-to, var(--secondary))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body:not([data-theme-preset]) {
+  --highlight-from: oklch(0.55 0.2 265);
+  --highlight-to: oklch(0.62 0.22 295);
+}
+
+.dark body:not([data-theme-preset]) {
+  --highlight-from: oklch(0.72 0.16 265);
+  --highlight-to: oklch(0.78 0.14 295);
 }
 
 /* ── Border radius ────────────────────────────────────────────────────── */

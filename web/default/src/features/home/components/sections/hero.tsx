@@ -46,7 +46,7 @@ export function Hero(props: HeroProps) {
         >
           {t('Unified API Gateway for')}
           <br />
-          <span className='bg-gradient-to-r from-blue-400 via-violet-400 to-purple-500 bg-clip-text text-transparent'>
+          <span className='text-preset-highlight'>
             {t('All Your AI Models')}
           </span>
         </h1>

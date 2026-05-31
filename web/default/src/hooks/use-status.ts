@@ -53,6 +53,9 @@ export function useStatus() {
             err
           )
         }
+      } finally {
+        // Root 已改用 useStatus 拉取配置，需同步清除 loading，避免 Header 一直显示 Skeleton
+        useSystemConfigStore.getState().setLoading(false)
       }
       // Save to localStorage
       try {

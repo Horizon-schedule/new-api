@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -88,6 +88,19 @@ function serializeRules(rules: Rule[]): string {
   return Object.keys(nested).length === 0
     ? ''
     : JSON.stringify(nested, null, 2)
+}
+
+function rulesSignature(rules: Rule[]): string {
+  return JSON.stringify(nestRules(rules))
+}
+
+function sourceValueSignature(value: string): string {
+  return JSON.stringify(
+    safeJsonParse<Record<string, Record<string, number>>>(value, {
+      fallback: {},
+      silent: true,
+    })
+  )
 }
 
 type GroupSectionProps = {
@@ -219,6 +232,21 @@ export function GroupGroupRatioRulesEditor({
     )
   )
   const [newGroupName, setNewGroupName] = useState('')
+
+  useEffect(() => {
+    const incomingSignature = sourceValueSignature(value)
+    setRules((currentRules) => {
+      if (rulesSignature(currentRules) === incomingSignature) {
+        return currentRules
+      }
+      return flattenRules(
+        safeJsonParse<Record<string, Record<string, number>>>(value, {
+          fallback: {},
+          silent: true,
+        })
+      )
+    })
+  }, [value])
 
   const emitChange = useCallback(
     (nextRules: Rule[]) => {

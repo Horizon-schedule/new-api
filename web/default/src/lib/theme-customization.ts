@@ -23,6 +23,7 @@ For commercial licensing, please contact support@quantumnous.com
  * provider without breaking React Fast Refresh boundaries.
  */
 
+/** Primary + secondary pair for dual-tone swatch previews (matches theme-presets.css). */
 export const THEME_PRESETS = [
   {
     value: 'default',
@@ -52,12 +53,12 @@ export const THEME_PRESETS = [
   {
     value: 'forest-whisper',
     name: 'Forest Whisper',
-    swatches: ['oklch(0.5276 0.1072 182.22)', 'oklch(0.5236 0.0505 250.18)'],
+    swatches: ['oklch(0.5276 0.1072 182.22)', 'oklch(0.7294 0.0416 244.67)'],
   },
   {
     value: 'ocean-breeze',
     name: 'Ocean Breeze',
-    swatches: ['oklch(0.5461 0.2152 262.88)', 'oklch(0.5854 0.2041 277.12)'],
+    swatches: ['oklch(0.5461 0.2152 262.88)', 'oklch(0.785 0.1007 274.72)'],
   },
   {
     value: 'lavender-dream',
@@ -67,42 +68,42 @@ export const THEME_PRESETS = [
   {
     value: 'indigo',
     name: 'Indigo',
-    swatches: ['oklch(0.511 0.262 276.966)', 'oklch(0.623 0.214 259.815)'],
+    swatches: ['oklch(0.511 0.262 276.966)', 'oklch(0.809 0.105 251.813)'],
   },
   {
     value: 'emerald',
     name: 'Emerald',
-    swatches: ['oklch(0.596 0.145 163.225)', 'oklch(0.696 0.17 162.48)'],
+    swatches: ['oklch(0.596 0.145 163.225)', 'oklch(0.845 0.143 164.978)'],
   },
   {
     value: 'amber',
     name: 'Amber',
-    swatches: ['oklch(0.769 0.188 70.08)', 'oklch(0.828 0.189 84.429)'],
+    swatches: ['oklch(0.769 0.188 70.08)', 'oklch(0.924 0.12 95.746)'],
   },
   {
     value: 'crimson',
     name: 'Crimson',
-    swatches: ['oklch(0.577 0.245 27.325)', 'oklch(0.704 0.191 22.216)'],
+    swatches: ['oklch(0.577 0.245 27.325)', 'oklch(0.885 0.062 18.334)'],
   },
   {
     value: 'midnight',
     name: 'Midnight',
-    swatches: ['oklch(0.379 0.146 265.522)', 'oklch(0.488 0.243 264.376)'],
+    swatches: ['oklch(0.379 0.146 265.522)', 'oklch(0.623 0.214 259.815)'],
   },
   {
     value: 'coral',
     name: 'Coral',
-    swatches: ['oklch(0.645 0.246 16.439)', 'oklch(0.75 0.183 55.934)'],
+    swatches: ['oklch(0.645 0.246 16.439)', 'oklch(0.879 0.169 91.605)'],
   },
   {
     value: 'violet',
     name: 'Violet',
-    swatches: ['oklch(0.541 0.281 293.009)', 'oklch(0.702 0.183 293.541)'],
+    swatches: ['oklch(0.541 0.281 293.009)', 'oklch(0.894 0.057 293.283)'],
   },
   {
     value: 'slate',
     name: 'Slate',
-    swatches: ['oklch(0.446 0.043 257.281)', 'oklch(0.554 0.046 257.417)'],
+    swatches: ['oklch(0.446 0.043 257.281)', 'oklch(0.869 0.022 252.894)'],
   },
 ] as const
 

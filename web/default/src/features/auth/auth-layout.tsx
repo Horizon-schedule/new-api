@@ -18,6 +18,8 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
+import { HeaderLogo } from '@/components/layout/components/header-logo'
+import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -27,7 +29,9 @@ type AuthLayoutProps = {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   const { t } = useTranslation()
-  const { systemName, logo, loading } = useSystemConfig()
+  const { loading: statusLoading } = useStatus()
+  const { systemName, logo } = useSystemConfig()
+  const brandLoading = statusLoading && !systemName
 
   return (
     <div className='relative grid h-svh max-w-none'>
@@ -36,17 +40,17 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         className='absolute top-4 left-4 z-10 flex items-center gap-2 transition-opacity hover:opacity-80 sm:top-8 sm:left-8'
       >
         <div className='bg-background ring-border/50 relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-sm ring-1 sm:size-14'>
-          {loading ? (
+          {brandLoading ? (
             <Skeleton className='absolute inset-0 rounded-2xl' />
           ) : (
-            <img
+            <HeaderLogo
               src={logo}
               alt={t('Logo')}
               className='size-full rounded-2xl object-contain p-0.5'
             />
           )}
         </div>
-        {loading ? (
+        {brandLoading ? (
           <Skeleton className='h-6 w-24' />
         ) : (
           <h1 className='text-xl font-semibold sm:text-2xl'>{systemName}</h1>

@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/use-notifications'
+import { useStatus } from '@/hooks/use-status'
 import { useSystemConfig } from '@/hooks/use-system-config'
 import { useTopNavLinks } from '@/hooks/use-top-nav-links'
 import { Button } from '@/components/ui/button'
@@ -88,12 +89,9 @@ export function PublicHeader(props: PublicHeaderProps) {
   const [authPromptSecondsLeft, setAuthPromptSecondsLeft] =
     useState(AUTH_PROMPT_SECONDS)
   const { auth } = useAuthStore()
-  const {
-    systemName,
-    logo: systemLogo,
-    loading,
-    logoLoaded,
-  } = useSystemConfig()
+  const { loading: statusLoading } = useStatus()
+  const { systemName, logo: systemLogo } = useSystemConfig()
+  const brandLoading = statusLoading && !customSiteName && !systemName
   const dynamicLinks = useTopNavLinks()
   const notifications = useNotifications()
   const routerState = useRouterState()
@@ -202,21 +200,23 @@ export function PublicHeader(props: PublicHeaderProps) {
               className='group flex shrink-0 items-center gap-3'
             >
               <div className='bg-background ring-border/50 flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-sm ring-1 transition-all duration-300 group-hover:scale-[1.02] sm:size-14'>
-                {loading ? (
+                {brandLoading ? (
                   <Skeleton className='size-full rounded-2xl' />
                 ) : customLogo ? (
                   customLogo
                 ) : (
                   <HeaderLogo
                     src={systemLogo}
-                    loading={loading}
-                    logoLoaded={logoLoaded}
                     className='size-full rounded-2xl object-contain p-0.5'
                   />
                 )}
               </div>
               <span className='text-base font-semibold tracking-tight sm:text-lg'>
-                {loading ? <Skeleton className='h-5 w-20' /> : displaySiteName}
+                {brandLoading ? (
+                  <Skeleton className='h-5 w-20' />
+                ) : (
+                  displaySiteName
+                )}
               </span>
             </Link>
 
@@ -280,9 +280,7 @@ export function PublicHeader(props: PublicHeaderProps) {
               {showAuthButtons && (
                 <>
                   <div className='bg-border/40 mx-1 h-4 w-px' />
-                  {loading ? (
-                    <Skeleton className='h-8 w-20 rounded-lg' />
-                  ) : isAuthenticated ? (
+                  {isAuthenticated ? (
                     <ProfileDropdown />
                   ) : (
                     <Button
@@ -300,9 +298,7 @@ export function PublicHeader(props: PublicHeaderProps) {
             {/* Mobile: compact actions + hamburger */}
             <div className='flex items-center gap-2 sm:hidden'>
               {showThemeSwitch && <ThemeSwitch />}
-              {showAuthButtons && !loading && isAuthenticated && (
-                <ProfileDropdown />
-              )}
+              {showAuthButtons && isAuthenticated && <ProfileDropdown />}
               <Button
                 type='button'
                 variant='ghost'

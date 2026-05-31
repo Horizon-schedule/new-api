@@ -258,35 +258,51 @@ function PresetConfig() {
           >
             <div
               className={cn(
-                'ring-border relative h-12 rounded-md ring-[1px] transition',
-                'group-data-checked:ring-primary group-data-checked:shadow-md',
-                'group-focus-visible:ring-2',
-                'group-hover:ring-primary/60'
+                'ring-border relative h-12 overflow-hidden rounded-md ring-1 transition',
+                'group-data-checked:ring-foreground/75 group-data-checked:ring-2 group-data-checked:shadow-md',
+                'group-focus-visible:ring-foreground/75 group-focus-visible:ring-2',
+                'group-hover:ring-foreground/35'
               )}
             >
               <div
                 aria-hidden='true'
-                className='absolute inset-0 rounded-md'
-                style={
-                  preset.value === 'default'
-                    ? {
+                className='absolute inset-0 flex rounded-[inherit]'
+              >
+                {preset.value === 'default' ? (
+                  <>
+                    <div className='bg-foreground flex-1' />
+                    <div className='bg-background border-border flex-1 border-l' />
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className='flex-1'
+                      style={{ background: preset.swatches[0] }}
+                    />
+                    <div
+                      className='flex-1 border-l border-white/25'
+                      style={{
                         background:
-                          'linear-gradient(135deg, var(--background) 0%, var(--muted) 50%, var(--foreground) 100%)',
-                      }
-                    : {
-                        background: `linear-gradient(135deg, ${preset.swatches[0]} 0%, ${preset.swatches[1] ?? preset.swatches[0]} 100%)`,
-                      }
-                }
-              />
+                          preset.swatches[1] ?? preset.swatches[0],
+                      }}
+                    />
+                  </>
+                )}
+              </div>
               <CircleCheck
                 className={cn(
-                  'fill-primary absolute top-0 right-0 z-10 size-5 translate-x-1/2 -translate-y-1/2 stroke-white',
+                  'fill-foreground text-background absolute top-1 right-1 z-10 size-4 stroke-[2.5]',
                   'group-data-unchecked:hidden'
                 )}
                 aria-hidden='true'
               />
             </div>
-            <div className='mt-1.5 truncate text-center text-xs'>
+            <div
+              className={cn(
+                'text-muted-foreground mt-1.5 truncate text-center text-xs transition-colors',
+                'group-data-checked:text-foreground group-data-checked:font-medium'
+              )}
+            >
               {t(`preset.${preset.value}`)}
             </div>
           </Item>
