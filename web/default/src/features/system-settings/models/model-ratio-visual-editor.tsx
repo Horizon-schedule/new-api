@@ -91,6 +91,9 @@ type ModelRatioVisualEditorProps = {
   onlyUnsetModels?: boolean
   /** Enabled channel models used to discover unset pricing entries */
   enabledModelNames?: string[]
+  /** Persist pricing to server immediately after updating a model (unset tab) */
+  autoPersistChanges?: boolean
+  onPersistChanges?: () => void | Promise<void>
 }
 
 type ModelRow = {
@@ -225,13 +228,14 @@ const getPriceDetail = (row: ModelRow, t: (key: string) => string) => {
   return details.length > 0 ? details.join(' · ') : t('Base input price only')
 }
 
-export const ModelRatioVisualEditor = memo(
-  function ModelRatioVisualEditor({
-    control,
-    onChange,
-    onlyUnsetModels = false,
-    enabledModelNames,
-  }: ModelRatioVisualEditorProps) {
+export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
+  control,
+  onChange,
+  onlyUnsetModels = false,
+  enabledModelNames,
+  autoPersistChanges = false,
+  onPersistChanges,
+}: ModelRatioVisualEditorProps) {
     const [
       modelPrice = '',
       modelRatio = '',
@@ -971,8 +975,17 @@ export const ModelRatioVisualEditor = memo(
         persistPricingData(data)
         setEditData(data)
         setEditorOpen(true)
+
+        if (autoPersistChanges && onPersistChanges) {
+          queueMicrotask(() => {
+            void onPersistChanges()
+          })
+          return
+        }
+
+        toast.success(t('Pricing updated in draft'))
       },
-      [persistPricingData]
+      [autoPersistChanges, onPersistChanges, persistPricingData, t]
     )
 
     const handleBatchCopy = useCallback(() => {
@@ -1167,21 +1180,4 @@ export const ModelRatioVisualEditor = memo(
         )}
       </div>
     )
-  },
-  // Custom equality check - only re-render if JSON props actually changed
-  (prevProps, nextProps) => {
-    return (
-      prevProps.modelPrice === nextProps.modelPrice &&
-      prevProps.modelRatio === nextProps.modelRatio &&
-      prevProps.cacheRatio === nextProps.cacheRatio &&
-      prevProps.createCacheRatio === nextProps.createCacheRatio &&
-      prevProps.completionRatio === nextProps.completionRatio &&
-      prevProps.imageRatio === nextProps.imageRatio &&
-      prevProps.audioRatio === nextProps.audioRatio &&
-      prevProps.audioCompletionRatio === nextProps.audioCompletionRatio &&
-      prevProps.billingMode === nextProps.billingMode &&
-      prevProps.billingExpr === nextProps.billingExpr &&
-      prevProps.onChange === nextProps.onChange
-    )
-  }
-)
+})

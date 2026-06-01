@@ -113,6 +113,8 @@ export const ModelRatioForm = memo(function ModelRatioForm({
               control={form.control}
               onlyUnsetModels={onlyUnsetModels}
               enabledModelNames={enabledModelNames}
+              autoPersistChanges={onlyUnsetModels}
+              onPersistChanges={() => form.handleSubmit(onSave)()}
               onChange={(field, value) => {
                 const fieldMap: Record<string, keyof ModelFormValues> = {
                   'billing_setting.billing_mode': 'BillingMode',

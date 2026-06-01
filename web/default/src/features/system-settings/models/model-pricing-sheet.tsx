@@ -709,17 +709,56 @@ export function ModelPricingEditorPanel({
       return
     }
 
+    const inputPrice = toNumberOrNull(promptPrice)
     const data: ModelRatioData = {
       name: values.name.trim(),
       billingMode: pricingMode,
       price: values.price || '',
-      ratio: values.ratio || '',
-      cacheRatio: values.cacheRatio || '',
-      createCacheRatio: values.createCacheRatio || '',
-      completionRatio: values.completionRatio || '',
-      imageRatio: values.imageRatio || '',
-      audioRatio: values.audioRatio || '',
-      audioCompletionRatio: values.audioCompletionRatio || '',
+      ratio:
+        pricingMode === 'per-token' && inputPrice !== null
+          ? formatNumber(inputPrice / 2)
+          : values.ratio || '',
+      cacheRatio:
+        pricingMode === 'per-token' &&
+        laneEnabled.cache &&
+        hasValue(lanePrices.cache) &&
+        inputPrice !== null
+          ? deriveLaneRatio('cache', lanePrices.cache)
+          : values.cacheRatio || '',
+      createCacheRatio:
+        pricingMode === 'per-token' &&
+        laneEnabled.createCache &&
+        hasValue(lanePrices.createCache) &&
+        inputPrice !== null
+          ? deriveLaneRatio('createCache', lanePrices.createCache)
+          : values.createCacheRatio || '',
+      completionRatio:
+        pricingMode === 'per-token' &&
+        laneEnabled.completion &&
+        hasValue(lanePrices.completion) &&
+        inputPrice !== null
+          ? deriveLaneRatio('completion', lanePrices.completion)
+          : values.completionRatio || '',
+      imageRatio:
+        pricingMode === 'per-token' &&
+        laneEnabled.image &&
+        hasValue(lanePrices.image) &&
+        inputPrice !== null
+          ? deriveLaneRatio('image', lanePrices.image)
+          : values.imageRatio || '',
+      audioRatio:
+        pricingMode === 'per-token' &&
+        laneEnabled.audioInput &&
+        hasValue(lanePrices.audioInput) &&
+        inputPrice !== null
+          ? deriveLaneRatio('audioInput', lanePrices.audioInput)
+          : values.audioRatio || '',
+      audioCompletionRatio:
+        pricingMode === 'per-token' &&
+        laneEnabled.audioOutput &&
+        hasValue(lanePrices.audioOutput)
+          ? deriveLaneRatio('audioOutput', lanePrices.audioOutput)
+          : values.audioCompletionRatio || '',
     }
 
     if (pricingMode === 'tiered_expr') {
@@ -728,8 +767,10 @@ export function ModelPricingEditorPanel({
     }
 
     onSave(data)
-    form.reset()
-    onCancel?.()
+    if (!isEditMode) {
+      form.reset()
+      onCancel?.()
+    }
   }
 
   const activeName = watchedValues.name || editData?.name || t('New model')
