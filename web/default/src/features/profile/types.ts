@@ -81,6 +81,8 @@ export interface UserProfile {
   telegram_id?: string
   /** LinuxDO ID (OAuth) */
   linux_do_id?: string
+  /** Custom avatar URL or data URL */
+  avatar?: string
 }
 
 /**
@@ -118,6 +120,8 @@ export interface UserSettings {
   upstream_model_update_notify_enabled?: boolean
   /** Preferred interface/API response language */
   language?: string
+  /** Custom avatar (data URL or external URL) */
+  avatar?: string
 }
 
 /**

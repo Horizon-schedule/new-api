@@ -70,6 +70,14 @@ export async function updateUserLanguage(
 }
 
 /**
+ * Update user avatar (data URL or empty string to remove)
+ */
+export async function updateUserAvatar(avatar: string): Promise<ApiResponse> {
+  const res = await api.put('/api/user/self', { avatar })
+  return res.data
+}
+
+/**
  * Delete user account
  */
 export async function deleteUserAccount(

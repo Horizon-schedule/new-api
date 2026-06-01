@@ -75,6 +75,9 @@ var DefaultCollapseSidebar = false // default value of collapse sidebar
 var SessionSecret = uuid.New().String()
 var CryptoSecret = uuid.New().String()
 
+// SessionMaxAge is the browser session cookie lifetime in seconds (12 hours).
+const SessionMaxAge = 12 * 60 * 60
+
 var OptionMap map[string]string
 var OptionMapRWMutex sync.RWMutex
 

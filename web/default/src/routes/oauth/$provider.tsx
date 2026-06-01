@@ -123,7 +123,7 @@ function OAuthCallback() {
             data?: AuthUser | null
           }
           if (selfResponse?.success && selfResponse.data) {
-            useAuthStore.getState().auth.setUser(selfResponse.data)
+            useAuthStore.getState().auth.establishSession(selfResponse.data)
             try {
               if (
                 typeof window !== 'undefined' &&
@@ -185,7 +185,7 @@ function OAuthCallback() {
           }
           // Otherwise it's a login, use payload user if available
           if (loginUser) {
-            useAuthStore.getState().auth.setUser(loginUser)
+            useAuthStore.getState().auth.establishSession(loginUser)
             try {
               if (typeof window !== 'undefined' && loginUser.id != null) {
                 window.localStorage.setItem('uid', String(loginUser.id))

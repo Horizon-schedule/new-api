@@ -67,7 +67,7 @@ export function useAuthRedirect() {
       const self = await getSelf()
       if (self?.success && self.data) {
         const user = self.data as User
-        auth.setUser(user)
+        auth.establishSession(user)
 
         // Update user ID if not already set
         if (user.id) {

@@ -20,10 +20,10 @@ import { Activity, BarChart3, WalletCards } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatCompactNumber, formatQuota } from '@/lib/format'
 import { getRoleLabel } from '@/lib/roles'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { ProfileAvatarEditor } from './profile-avatar-editor'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatusBadge } from '@/components/status-badge'
-import { getUserInitials, getDisplayName } from '../lib'
+import { getDisplayName } from '../lib'
 import type { UserProfile } from '../types'
 
 // ============================================================================
@@ -33,9 +33,14 @@ import type { UserProfile } from '../types'
 interface ProfileHeaderProps {
   profile: UserProfile | null
   loading: boolean
+  onProfileUpdate?: () => void
 }
 
-export function ProfileHeader({ profile, loading }: ProfileHeaderProps) {
+export function ProfileHeader({
+  profile,
+  loading,
+  onProfileUpdate,
+}: ProfileHeaderProps) {
   const { t } = useTranslation()
 
   if (loading) {
@@ -75,8 +80,6 @@ export function ProfileHeader({ profile, loading }: ProfileHeaderProps) {
   if (!profile) return null
 
   const displayName = getDisplayName(profile)
-  const initials = getUserInitials(profile)
-  const roleLabel = getRoleLabel(profile.role)
   const stats = [
     {
       label: t('Current Balance'),
@@ -98,15 +101,16 @@ export function ProfileHeader({ profile, loading }: ProfileHeaderProps) {
     },
   ]
 
+  const roleLabel = getRoleLabel(profile.role)
+
   return (
     <div className='bg-card overflow-hidden rounded-lg border'>
       <div className='p-3 sm:p-5'>
         <div className='flex items-center gap-3 text-left sm:gap-4'>
-          <Avatar className='ring-background h-12 w-12 rounded-xl text-sm ring-2 sm:h-16 sm:w-16 sm:rounded-2xl sm:text-lg sm:ring-4'>
-            <AvatarFallback className='bg-primary/10 text-primary rounded-xl sm:rounded-2xl'>
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <ProfileAvatarEditor
+            profile={profile}
+            onUpdated={onProfileUpdate}
+          />
 
           <div className='min-w-0 flex-1 space-y-1.5 sm:space-y-3'>
             <div className='flex min-w-0 items-center gap-2'>

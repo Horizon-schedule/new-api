@@ -22,6 +22,7 @@ import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AnimatedOutlet } from '@/components/page-transition'
+import { SessionExpiryMonitor } from '@/components/session-expiry-monitor'
 import { SkipToMain } from '@/components/skip-to-main'
 import { WorkspaceProvider } from '../context/workspace-context'
 import { AppHeader } from './app-header'
@@ -39,6 +40,7 @@ export function AuthenticatedLayout(props: AuthenticatedLayoutProps) {
       <SearchProvider>
         <WorkspaceProvider>
           <SidebarProvider defaultOpen={defaultOpen} className='flex-col'>
+            <SessionExpiryMonitor />
             <SkipToMain />
             <AppHeader />
             <div className='flex min-h-0 w-full flex-1'>

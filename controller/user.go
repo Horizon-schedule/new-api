@@ -30,6 +30,30 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+const maxUserAvatarLength = 512 * 1024
+
+func validateUserAvatar(value string) error {
+	if value == "" {
+		return nil
+	}
+	if len(value) > maxUserAvatarLength {
+		return errors.New("avatar too large")
+	}
+	if !strings.HasPrefix(value, "data:image/") {
+		return errors.New("invalid avatar format")
+	}
+	semicolon := strings.Index(value, ";")
+	if semicolon == -1 {
+		return errors.New("invalid avatar format")
+	}
+	switch value[:semicolon] {
+	case "data:image/jpeg", "data:image/png", "data:image/webp", "data:image/gif":
+		return nil
+	default:
+		return errors.New("unsupported avatar type")
+	}
+}
+
 func Login(c *gin.Context) {
 	if !common.PasswordLoginEnabled {
 		common.ApiErrorI18n(c, i18n.MsgUserPasswordLoginDisabled)
@@ -419,6 +443,7 @@ func GetSelf(c *gin.Context) {
 		"setting":           user.Setting,
 		"stripe_customer":   user.StripeCustomer,
 		"sidebar_modules":   userSetting.SidebarModules, // 正确提取sidebar_modules字段
+		"avatar":            userSetting.Avatar,
 		"permissions":       permissions,                // 新增权限字段
 	}
 
@@ -682,6 +707,37 @@ func UpdateSelf(c *gin.Context) {
 		}
 
 		// 保存更新后的设置
+		user.SetSetting(currentSetting)
+		if err := user.Update(false); err != nil {
+			common.ApiErrorI18n(c, i18n.MsgUpdateFailed)
+			return
+		}
+
+		common.ApiSuccessI18n(c, i18n.MsgUpdateSuccess, nil)
+		return
+	}
+
+	// 用户头像更新（存储在 setting.avatar，支持 data URL 或清空）
+	if avatarRaw, avatarExists := requestData["avatar"]; avatarExists {
+		userId := c.GetInt("id")
+		user, err := model.GetUserById(userId, false)
+		if err != nil {
+			common.ApiError(c, err)
+			return
+		}
+
+		avatarStr, ok := avatarRaw.(string)
+		if !ok {
+			common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+			return
+		}
+		if err := validateUserAvatar(avatarStr); err != nil {
+			common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+			return
+		}
+
+		currentSetting := user.GetSetting()
+		currentSetting.Avatar = avatarStr
 		user.SetSetting(currentSetting)
 		if err := user.Update(false); err != nil {
 			common.ApiErrorI18n(c, i18n.MsgUpdateFailed)

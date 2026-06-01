@@ -107,7 +107,7 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
       }
 
       // Update auth store
-      auth.setUser(userData as User)
+      auth.establishSession(userData as User)
 
       // Store user ID in localStorage for compatibility
       if (userData.id) {

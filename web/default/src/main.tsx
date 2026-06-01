@@ -28,6 +28,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import i18next from 'i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { resetSessionVerified } from '@/lib/session'
 import { getStatus } from '@/lib/api'
 import '@/lib/dayjs'
 import { applyFaviconToDom } from '@/lib/dom-utils'
@@ -79,6 +80,7 @@ const queryClient = new QueryClient({
       if (error instanceof AxiosError) {
         if (error.response?.status === 401) {
           toast.error(i18next.t('Session expired!'))
+          resetSessionVerified()
           useAuthStore.getState().auth.reset()
           const redirect = `${router.history.location.href}`
           router.navigate({ to: '/sign-in', search: { redirect } })

@@ -17,6 +17,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { create } from 'zustand'
+import {
+  clearSessionExpiry,
+  getSessionExpiresAt,
+  isSessionExpired,
+  markSessionActive,
+} from '@/lib/session'
 
 export type UserPermissions = {
   sidebar_settings?: boolean
@@ -44,6 +50,7 @@ export interface AuthUser {
   wechat_id?: string
   telegram_id?: string
   linux_do_id?: string
+  avatar?: string
   setting?: Record<string, unknown> | string
   stripe_customer?: string
   sidebar_modules?: string
@@ -54,52 +61,71 @@ interface AuthState {
   auth: {
     user: AuthUser | null
     setUser: (user: AuthUser | null) => void
+    establishSession: (user: AuthUser) => void
     reset: () => void
   }
 }
 
-export const useAuthStore = create<AuthState>()((set) => {
-  // Restore user info from localStorage
-  const initUser = (() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = window.localStorage.getItem('user')
-        return saved ? JSON.parse(saved) : null
-      }
-    } catch {
-      // Clear dirty data when parsing fails
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem('user')
-      }
+function readStoredUser(): AuthUser | null {
+  try {
+    if (typeof window === 'undefined') return null
+
+    const saved = window.localStorage.getItem('user')
+    if (!saved) return null
+
+    if (!getSessionExpiresAt()) {
+      markSessionActive()
+    }
+
+    if (isSessionExpired()) {
+      window.localStorage.removeItem('user')
+      clearSessionExpiry()
+      return null
+    }
+
+    return JSON.parse(saved) as AuthUser
+  } catch {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('user')
+      clearSessionExpiry()
     }
     return null
-  })()
+  }
+}
 
-  return {
-    auth: {
-      user: initUser,
-      setUser: (user) =>
-        set((state) => {
-          // Persist user to localStorage
-          if (typeof window !== 'undefined') {
-            if (user) {
-              window.localStorage.setItem('user', JSON.stringify(user))
-            } else {
-              window.localStorage.removeItem('user')
-            }
-          }
-          return { ...state, auth: { ...state.auth, user } }
-        }),
-      reset: () =>
-        set((state) => {
-          if (typeof window !== 'undefined') {
+export const useAuthStore = create<AuthState>()((set) => ({
+  auth: {
+    user: readStoredUser(),
+    setUser: (user) =>
+      set((state) => {
+        if (typeof window !== 'undefined') {
+          if (user) {
+            window.localStorage.setItem('user', JSON.stringify(user))
+          } else {
+            clearSessionExpiry()
             window.localStorage.removeItem('user')
           }
-          return {
-            ...state,
-            auth: { ...state.auth, user: null },
-          }
-        }),
-    },
-  }
-})
+        }
+        return { ...state, auth: { ...state.auth, user } }
+      }),
+    establishSession: (user) =>
+      set((state) => {
+        if (typeof window !== 'undefined') {
+          markSessionActive()
+          window.localStorage.setItem('user', JSON.stringify(user))
+        }
+        return { ...state, auth: { ...state.auth, user } }
+      }),
+    reset: () =>
+      set((state) => {
+        if (typeof window !== 'undefined') {
+          clearSessionExpiry()
+          window.localStorage.removeItem('user')
+        }
+        return {
+          ...state,
+          auth: { ...state.auth, user: null },
+        }
+      }),
+  },
+}))
