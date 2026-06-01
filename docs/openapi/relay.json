@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "AI模型接口",
-    "description": "",
+    "description": "new-api 网关 **AI 转发接口**（OpenAI / Claude / Gemini / Qwen 等）。\n\n## 调试前必读\n\n1. **服务地址**：填写你**自己部署**的网关根地址，例如 `https://api.example.com`。\n2. **勿使用 `docs.newapi.pro`**：该域名为[官方文档站](https://docs.newapi.pro)，不提供 `/v1/messages` 等转发；在 Apifox 中指向它会出现 `[Proxy] Failed to proxy request: fetch failed` 或 500。\n3. **鉴权**：请求头 `Authorization: Bearer sk-xxx`，`sk-xxx` 为控制台「令牌」中创建的 API Key，**不能为空**。\n4. **Claude 接口**：除 Bearer 外必须带 `anthropic-version: 2023-06-01`（或客户端要求的版本）。\n5. **Apifox 环境**：建议变量 `baseUrl` = 网关根地址；接口 URL 使用 `{{baseUrl}}/v1/...`。若仍失败，可在「设置 → 高级」尝试关闭「使用云端 Mock/代理」改为直连你的网关。\n\n接口说明详见：https://docs.newapi.pro/zh/docs/api",
     "version": "1.0.0"
   },
   "tags": [
@@ -187,7 +187,7 @@
       "post": {
         "summary": "创建聊天对话",
         "deprecated": false,
-        "description": "根据对话历史创建模型响应。支持流式和非流式响应。\n\n兼容 OpenAI Chat Completions API。\n",
+        "description": "根据对话历史创建模型响应。支持流式和非流式响应。\n\n兼容 OpenAI Chat Completions API。适用于 **GPT、Qwen、Gemini（OpenAI 兼容）** 等：在 `model` 中填写控制台已启用的模型名。\n\n**服务地址**：`{你的网关}/v1/chat/completions`，勿使用 `docs.newapi.pro`。\n",
         "operationId": "createChatCompletion",
         "tags": [
           "OpenAI格式(Chat)"
@@ -198,6 +198,47 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "examples": {
+                "gpt-chat": {
+                  "summary": "GPT 对话",
+                  "value": {
+                    "model": "gpt-4o",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "你好"
+                      }
+                    ],
+                    "stream": false
+                  }
+                },
+                "qwen-chat": {
+                  "summary": "Qwen 对话",
+                  "value": {
+                    "model": "qwen-plus",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "你好"
+                      }
+                    ],
+                    "stream": false
+                  }
+                },
+                "gemini-openai-compat": {
+                  "summary": "Gemini（OpenAI 兼容）",
+                  "value": {
+                    "model": "gemini-2.5-flash",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "你好"
+                      }
+                    ],
+                    "stream": false
+                  }
+                }
               }
             }
           },
@@ -1277,7 +1318,7 @@
       "post": {
         "summary": "Claude 聊天",
         "deprecated": false,
-        "description": "Anthropic Claude Messages API 格式的请求。\n需要在请求头中包含 `anthropic-version`。\n",
+        "description": "Anthropic Claude Messages API（**Claude / Claude Code** 原生格式）。\n\n**请求地址**：`{你的网关}/v1/messages`，**不是** `docs.newapi.pro`。\n\n**必填请求头**：\n- `Authorization: Bearer <控制台令牌>`\n- `anthropic-version: 2023-06-01`（示例值，与官方一致即可）\n\n**Claude Code**：设置 `ANTHROPIC_BASE_URL` 为网关根地址（不含 `/v1`），`ANTHROPIC_API_KEY` 为网关令牌。\n",
         "operationId": "createMessage",
         "tags": [
           "Claude格式(Messages)"
@@ -1286,20 +1327,20 @@
           {
             "name": "anthropic-version",
             "in": "header",
-            "description": "Anthropic API 版本",
+            "description": "Anthropic API 版本（必填）",
             "required": true,
-            "example": "",
+            "example": "2023-06-01",
             "schema": {
               "type": "string",
-              "example": "2023-06-01"
+              "example": "2023-06-01",
+              "default": "2023-06-01"
             }
           },
           {
             "name": "x-api-key",
             "in": "header",
-            "description": "Anthropic API Key (可选，也可使用 Bearer Token)",
+            "description": "可选；通常使用 Authorization Bearer 即可",
             "required": false,
-            "example": "",
             "schema": {
               "type": "string"
             }
@@ -1311,9 +1352,24 @@
               "schema": {
                 "$ref": "#/components/schemas/ClaudeRequest"
               },
-              "examples": {}
+              "examples": {
+                "claude-chat": {
+                  "summary": "Claude 对话",
+                  "value": {
+                    "model": "claude-sonnet-4-20250514",
+                    "max_tokens": 1024,
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "你好，请用一句话介绍你自己。"
+                      }
+                    ]
+                  }
+                }
+              }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -4601,7 +4657,8 @@
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "使用 Bearer Token 认证。\n格式: `Authorization: Bearer sk-xxxxxx`\n"
+        "bearerFormat": "sk-xxx",
+        "description": "控制台「令牌」里创建的 API Key。\n\n格式：`Authorization: Bearer sk-xxxxxx`\n\n**注意**：调试时必须填入完整 Key；仅 `Bearer ` 或空值会导致 401。Apifox 环境变量可命名为 `api_key`，值为 `sk-...`（不含 Bearer 前缀，由工具自动拼接）。\n"
       },
       "SessionAuth": {
         "type": "apiKey",
@@ -7285,7 +7342,18 @@
       }
     }
   },
-  "servers": [],
+  "servers": [
+    {
+      "url": "https://{gatewayHost}",
+      "description": "API 网关（请改为你部署的 new-api 地址，不要用 docs.newapi.pro）",
+      "variables": {
+        "gatewayHost": {
+          "default": "your-new-api.example.com",
+          "description": "仅主机名，不含路径。本地示例：127.0.0.1:3000"
+        }
+      }
+    }
+  ],
   "security": [
     {
       "BearerAuth": []

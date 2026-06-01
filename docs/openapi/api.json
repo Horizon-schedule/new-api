@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "后台管理接口",
-    "description": "",
+    "description": "new-api **管理后台 API**（路径前缀 `/api/`）。\n\n与 AI 转发接口（`relay.json`，路径 `/v1/`）共用同一部署域名，但用途不同：本文件用于登录、渠道、令牌、计费等后台操作。\n\n**勿将 `docs.newapi.pro` 填为调试地址**——其为文档站，不提供本 API。请使用你自己部署的网关地址。",
     "version": "1.0.0"
   },
   "tags": [
@@ -7806,7 +7806,18 @@
       }
     }
   },
-  "servers": [],
+  "servers": [
+    {
+      "url": "https://{gatewayHost}",
+      "description": "管理 API 网关根地址（路径已含 /api/）",
+      "variables": {
+        "gatewayHost": {
+          "default": "your-new-api.example.com",
+          "description": "你部署的 new-api 主机名，不要用 docs.newapi.pro"
+        }
+      }
+    }
+  ],
   "security": [
     {
       "Combination343": []
