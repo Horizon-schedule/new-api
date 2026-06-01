@@ -44,6 +44,12 @@ export const API_ENDPOINTS = {
 export const DEFAULT_GROUP = 'default' as const
 
 // Default configuration
+export const DEBUG_TABS = {
+  PREVIEW: 'preview',
+  REQUEST: 'request',
+  RESPONSE: 'response',
+} as const
+
 export const DEFAULT_CONFIG: PlaygroundConfig = {
   model: 'gpt-4o',
   group: DEFAULT_GROUP,
@@ -54,6 +60,14 @@ export const DEFAULT_CONFIG: PlaygroundConfig = {
   presence_penalty: 0,
   seed: null,
   stream: true,
+  imageEnabled: false,
+  imageUrls: [''],
+}
+
+export const DEFAULT_UI_STATE = {
+  showDebugPanel: true,
+  customRequestMode: false,
+  customRequestBody: '',
 }
 
 export const DEFAULT_PARAMETER_ENABLED: ParameterEnabled = {
@@ -80,6 +94,7 @@ export const ERROR_MESSAGES = {
   STREAM_START_ERROR: 'Error establishing connection',
   CONNECTION_CLOSED: 'Connection closed',
   INTERRUPTED: 'Generation was interrupted',
+  JSON_PARSE_ERROR: 'Invalid custom request body JSON',
 } as const
 
 // Message action button styles

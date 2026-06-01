@@ -16,73 +16,165 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useState, useCallback } from 'react'
-import { DEFAULT_CONFIG, DEFAULT_PARAMETER_ENABLED } from '../constants'
+import { useCallback, useRef, useState } from 'react'
 import {
-  loadConfig,
-  saveConfig,
-  loadParameterEnabled,
-  saveParameterEnabled,
+  DEBUG_TABS,
+  DEFAULT_CONFIG,
+  DEFAULT_PARAMETER_ENABLED,
+  DEFAULT_UI_STATE,
+} from '../constants'
+import {
   loadMessages,
+  loadStoredConfig,
   saveMessages,
+  saveStoredConfig,
 } from '../lib'
 import type {
+  DebugTabId,
   Message,
-  PlaygroundConfig,
   ParameterEnabled,
+  PlaygroundConfig,
+  PlaygroundDebugData,
+  PlaygroundStoredConfig,
   ModelOption,
   GroupOption,
 } from '../types'
+
+const EMPTY_DEBUG_DATA: PlaygroundDebugData = {
+  request: null,
+  response: null,
+  timestamp: null,
+  previewRequest: null,
+  previewTimestamp: null,
+  sseMessages: [],
+}
 
 /**
  * Main state management hook for playground
  */
 export function usePlaygroundState() {
-  // Load initial state from localStorage
-  const [config, setConfig] = useState<PlaygroundConfig>(() => {
-    const savedConfig = loadConfig()
-    return { ...DEFAULT_CONFIG, ...savedConfig }
-  })
+  const initialStored = useRef(loadStoredConfig()).current
+
+  const [config, setConfig] = useState<PlaygroundConfig>(() => ({
+    ...DEFAULT_CONFIG,
+    ...initialStored.inputs,
+  }))
 
   const [parameterEnabled, setParameterEnabled] = useState<ParameterEnabled>(
-    () => {
-      const saved = loadParameterEnabled()
-      return { ...DEFAULT_PARAMETER_ENABLED, ...saved }
-    }
+    () => ({
+      ...DEFAULT_PARAMETER_ENABLED,
+      ...initialStored.parameterEnabled,
+    })
   )
 
-  const [messages, setMessages] = useState<Message[]>(() => {
-    return loadMessages() || []
-  })
+  const [showDebugPanel, setShowDebugPanel] = useState(
+    initialStored.showDebugPanel ?? DEFAULT_UI_STATE.showDebugPanel
+  )
+  const [customRequestMode, setCustomRequestMode] = useState(
+    initialStored.customRequestMode ?? DEFAULT_UI_STATE.customRequestMode
+  )
+  const [customRequestBody, setCustomRequestBody] = useState(
+    initialStored.customRequestBody ?? DEFAULT_UI_STATE.customRequestBody
+  )
+  const [showSettings, setShowSettings] = useState(false)
 
+  const [messages, setMessages] = useState<Message[]>(() => loadMessages() || [])
   const [models, setModels] = useState<ModelOption[]>([])
   const [groups, setGroups] = useState<GroupOption[]>([])
 
-  // Update config with automatic save
+  const [debugData, setDebugData] = useState<PlaygroundDebugData>(EMPTY_DEBUG_DATA)
+  const [activeDebugTab, setActiveDebugTab] = useState<DebugTabId>(
+    DEBUG_TABS.PREVIEW
+  )
+
+  const saveConfigTimeoutRef = useRef<number | null>(null)
+
+  const persistConfig = useCallback(
+    (next: Partial<PlaygroundStoredConfig>) => {
+      const merged: PlaygroundStoredConfig = {
+        inputs: next.inputs ?? config,
+        parameterEnabled: next.parameterEnabled ?? parameterEnabled,
+        showDebugPanel: next.showDebugPanel ?? showDebugPanel,
+        customRequestMode: next.customRequestMode ?? customRequestMode,
+        customRequestBody: next.customRequestBody ?? customRequestBody,
+      }
+      saveStoredConfig(merged)
+    },
+    [
+      config,
+      parameterEnabled,
+      showDebugPanel,
+      customRequestMode,
+      customRequestBody,
+    ]
+  )
+
+  const debouncedSaveConfig = useCallback(() => {
+    if (saveConfigTimeoutRef.current) {
+      window.clearTimeout(saveConfigTimeoutRef.current)
+    }
+    saveConfigTimeoutRef.current = window.setTimeout(() => {
+      persistConfig({})
+    }, 300)
+  }, [persistConfig])
+
   const updateConfig = useCallback(
     <K extends keyof PlaygroundConfig>(key: K, value: PlaygroundConfig[K]) => {
       setConfig((prev) => {
         const updated = { ...prev, [key]: value }
-        saveConfig(updated)
+        persistConfig({ inputs: updated })
         return updated
       })
     },
-    []
+    [persistConfig]
   )
 
-  // Update parameter enabled with automatic save
   const updateParameterEnabled = useCallback(
     (key: keyof ParameterEnabled, value: boolean) => {
       setParameterEnabled((prev) => {
         const updated = { ...prev, [key]: value }
-        saveParameterEnabled(updated)
+        persistConfig({ parameterEnabled: updated })
         return updated
       })
     },
-    []
+    [persistConfig]
   )
 
-  // Update messages with automatic save
+  const toggleParameterEnabled = useCallback(
+    (key: keyof ParameterEnabled) => {
+      setParameterEnabled((prev) => {
+        const updated = { ...prev, [key]: !prev[key] }
+        persistConfig({ parameterEnabled: updated })
+        return updated
+      })
+    },
+    [persistConfig]
+  )
+
+  const updateShowDebugPanel = useCallback(
+    (value: boolean) => {
+      setShowDebugPanel(value)
+      persistConfig({ showDebugPanel: value })
+    },
+    [persistConfig]
+  )
+
+  const updateCustomRequestMode = useCallback(
+    (value: boolean) => {
+      setCustomRequestMode(value)
+      persistConfig({ customRequestMode: value })
+    },
+    [persistConfig]
+  )
+
+  const updateCustomRequestBody = useCallback(
+    (value: string) => {
+      setCustomRequestBody(value)
+      persistConfig({ customRequestBody: value })
+    },
+    [persistConfig]
+  )
+
   const updateMessages = useCallback(
     (updater: Message[] | ((prev: Message[]) => Message[])) => {
       setMessages((prev) => {
@@ -95,36 +187,64 @@ export function usePlaygroundState() {
     []
   )
 
-  // Clear all messages
   const clearMessages = useCallback(() => {
     updateMessages([])
   }, [updateMessages])
 
-  // Reset config to defaults
+  const handleConfigImport = useCallback(
+    (imported: PlaygroundStoredConfig) => {
+      setConfig(imported.inputs)
+      setParameterEnabled(imported.parameterEnabled)
+      setShowDebugPanel(imported.showDebugPanel)
+      setCustomRequestMode(imported.customRequestMode)
+      setCustomRequestBody(imported.customRequestBody)
+      saveStoredConfig(imported)
+    },
+    []
+  )
+
   const resetConfig = useCallback(() => {
-    setConfig(DEFAULT_CONFIG)
-    setParameterEnabled(DEFAULT_PARAMETER_ENABLED)
-    saveConfig(DEFAULT_CONFIG)
-    saveParameterEnabled(DEFAULT_PARAMETER_ENABLED)
+    setConfig({ ...DEFAULT_CONFIG })
+    setParameterEnabled({ ...DEFAULT_PARAMETER_ENABLED })
+    setShowDebugPanel(DEFAULT_UI_STATE.showDebugPanel)
+    setCustomRequestMode(DEFAULT_UI_STATE.customRequestMode)
+    setCustomRequestBody(DEFAULT_UI_STATE.customRequestBody)
+    saveStoredConfig({
+      inputs: { ...DEFAULT_CONFIG },
+      parameterEnabled: { ...DEFAULT_PARAMETER_ENABLED },
+      ...DEFAULT_UI_STATE,
+    })
   }, [])
 
   return {
-    // State
     config,
     parameterEnabled,
     messages,
     models,
     groups,
+    showDebugPanel,
+    customRequestMode,
+    customRequestBody,
+    showSettings,
+    debugData,
+    activeDebugTab,
 
-    // Setters
     setModels,
     setGroups,
+    setShowSettings,
+    setDebugData,
+    setActiveDebugTab,
 
-    // Actions
     updateConfig,
     updateParameterEnabled,
+    toggleParameterEnabled,
+    updateShowDebugPanel,
+    updateCustomRequestMode,
+    updateCustomRequestBody,
     updateMessages,
     clearMessages,
+    handleConfigImport,
     resetConfig,
+    debouncedSaveConfig,
   }
 }

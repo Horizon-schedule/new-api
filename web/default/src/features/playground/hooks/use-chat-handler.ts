@@ -19,7 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 import { sendChatCompletion } from '../api'
-import { MESSAGE_STATUS, ERROR_MESSAGES } from '../constants'
+import { DEBUG_TABS, MESSAGE_STATUS, ERROR_MESSAGES } from '../constants'
 import {
   buildChatCompletionPayload,
   updateAssistantMessageWithError,
@@ -27,13 +27,26 @@ import {
   processStreamingContent,
   finalizeMessage,
 } from '../lib'
-import type { Message, PlaygroundConfig, ParameterEnabled } from '../types'
+import type {
+  ChatCompletionRequest,
+  Message,
+  PlaygroundConfig,
+  ParameterEnabled,
+  PlaygroundDebugData,
+  DebugTabId,
+} from '../types'
 import { useStreamRequest } from './use-stream-request'
 
 interface UseChatHandlerOptions {
   config: PlaygroundConfig
   parameterEnabled: ParameterEnabled
+  customRequestMode: boolean
+  customRequestBody: string
   onMessageUpdate: (updater: (prev: Message[]) => Message[]) => void
+  onDebugUpdate: (
+    updater: (prev: PlaygroundDebugData) => PlaygroundDebugData
+  ) => void
+  setActiveDebugTab: (tab: DebugTabId) => void
 }
 
 /**
@@ -42,11 +55,14 @@ interface UseChatHandlerOptions {
 export function useChatHandler({
   config,
   parameterEnabled,
+  customRequestMode,
+  customRequestBody,
   onMessageUpdate,
+  onDebugUpdate,
+  setActiveDebugTab,
 }: UseChatHandlerOptions) {
   const { sendStreamRequest, stopStream, isStreaming } = useStreamRequest()
 
-  // Handle stream update
   const handleStreamUpdate = useCallback(
     (type: 'reasoning' | 'content', chunk: string) => {
       onMessageUpdate((prev) =>
@@ -54,7 +70,6 @@ export function useChatHandler({
           if (message.status === MESSAGE_STATUS.ERROR) return message
 
           if (type === 'reasoning') {
-            // Direct API reasoning_content
             return {
               ...message,
               reasoning: {
@@ -66,7 +81,6 @@ export function useChatHandler({
             }
           }
 
-          // Content streaming: handle <think> tags
           return {
             ...processStreamingContent(message, chunk),
             status: MESSAGE_STATUS.STREAMING,
@@ -77,7 +91,6 @@ export function useChatHandler({
     [onMessageUpdate]
   )
 
-  // Handle stream complete
   const handleStreamComplete = useCallback(() => {
     onMessageUpdate((prev) =>
       updateLastAssistantMessage(prev, (message) =>
@@ -89,7 +102,6 @@ export function useChatHandler({
     )
   }, [onMessageUpdate])
 
-  // Handle stream error
   const handleStreamError = useCallback(
     (error: string, errorCode?: string) => {
       toast.error(error)
@@ -100,42 +112,74 @@ export function useChatHandler({
     [onMessageUpdate]
   )
 
-  // Send streaming chat request
+  const resolvePayload = useCallback(
+    (messages: Message[]): ChatCompletionRequest | null => {
+      if (customRequestMode && customRequestBody.trim()) {
+        try {
+          return JSON.parse(customRequestBody) as ChatCompletionRequest
+        } catch {
+          toast.error(ERROR_MESSAGES.JSON_PARSE_ERROR)
+          return null
+        }
+      }
+      return buildChatCompletionPayload(messages, config, parameterEnabled)
+    },
+    [config, parameterEnabled, customRequestMode, customRequestBody]
+  )
+
   const sendStreamingChat = useCallback(
     (messages: Message[]) => {
-      const payload = buildChatCompletionPayload(
-        messages,
-        config,
-        parameterEnabled
-      )
-      sendStreamRequest(
-        payload,
-        handleStreamUpdate,
-        handleStreamComplete,
-        handleStreamError
-      )
+      const payload = resolvePayload(messages)
+      if (!payload) return
+
+      setActiveDebugTab(DEBUG_TABS.REQUEST)
+      sendStreamRequest(payload, {
+        onUpdate: handleStreamUpdate,
+        onComplete: handleStreamComplete,
+        onError: handleStreamError,
+        onDebug: ({ request, sseMessages, response }) => {
+          onDebugUpdate((prev) => ({
+            ...prev,
+            request,
+            response,
+            sseMessages,
+            timestamp: new Date().toISOString(),
+          }))
+        },
+      })
     },
     [
-      config,
-      parameterEnabled,
+      resolvePayload,
       sendStreamRequest,
       handleStreamUpdate,
       handleStreamComplete,
       handleStreamError,
+      onDebugUpdate,
+      setActiveDebugTab,
     ]
   )
 
-  // Send non-streaming chat request
   const sendNonStreamingChat = useCallback(
     async (messages: Message[]) => {
-      const payload = buildChatCompletionPayload(
-        messages,
-        config,
-        parameterEnabled
-      )
+      const payload = resolvePayload(messages)
+      if (!payload) return
+
+      setActiveDebugTab(DEBUG_TABS.REQUEST)
+      onDebugUpdate((prev) => ({
+        ...prev,
+        request: JSON.stringify(payload, null, 2),
+        timestamp: new Date().toISOString(),
+      }))
 
       try {
         const response = await sendChatCompletion(payload)
+        onDebugUpdate((prev) => ({
+          ...prev,
+          response: JSON.stringify(response, null, 2),
+          sseMessages: [],
+          timestamp: new Date().toISOString(),
+        }))
+
         const choice = response.choices?.[0]
         if (!choice) return
 
@@ -163,30 +207,56 @@ export function useChatHandler({
           }
           message?: string
         }
-        handleStreamError(
+        const errorMessage =
           err?.response?.data?.message ||
-            err?.message ||
-            ERROR_MESSAGES.API_REQUEST_ERROR,
+          err?.message ||
+          ERROR_MESSAGES.API_REQUEST_ERROR
+        onDebugUpdate((prev) => ({
+          ...prev,
+          response: errorMessage,
+          timestamp: new Date().toISOString(),
+        }))
+        handleStreamError(
+          errorMessage,
           err?.response?.data?.error?.code || undefined
         )
       }
     },
-    [config, parameterEnabled, onMessageUpdate, handleStreamError]
+    [
+      resolvePayload,
+      onDebugUpdate,
+      onMessageUpdate,
+      handleStreamError,
+      setActiveDebugTab,
+    ]
   )
 
-  // Send chat request (stream or non-stream based on config)
   const sendChat = useCallback(
     (messages: Message[]) => {
-      if (config.stream) {
+      const payload = resolvePayload(messages)
+      if (!payload) return
+
+      const useStream =
+        customRequestMode && customRequestBody.trim()
+          ? payload.stream !== false
+          : config.stream
+
+      if (useStream) {
         sendStreamingChat(messages)
       } else {
-        sendNonStreamingChat(messages)
+        void sendNonStreamingChat(messages)
       }
     },
-    [config.stream, sendStreamingChat, sendNonStreamingChat]
+    [
+      resolvePayload,
+      customRequestMode,
+      customRequestBody,
+      config.stream,
+      sendStreamingChat,
+      sendNonStreamingChat,
+    ]
   )
 
-  // Stop generation
   const stopGeneration = useCallback(() => {
     stopStream()
     onMessageUpdate((prev) =>

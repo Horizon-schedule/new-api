@@ -16,11 +16,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { SSE } from 'sse.js'
 import { getCommonHeaders } from '@/lib/api'
 import { API_ENDPOINTS, ERROR_MESSAGES } from '../constants'
 import type { ChatCompletionRequest, ChatCompletionChunk } from '../types'
+
+type StreamCallbacks = {
+  onUpdate: (type: 'reasoning' | 'content', chunk: string) => void
+  onComplete: () => void
+  onError: (error: string, errorCode?: string) => void
+  onDebug?: (data: {
+    request: string
+    sseMessages: string[]
+    response: string | null
+  }) => void
+}
 
 /**
  * Hook for handling streaming chat completion requests
@@ -28,14 +39,19 @@ import type { ChatCompletionRequest, ChatCompletionChunk } from '../types'
 export function useStreamRequest() {
   const sseSourceRef = useRef<SSE | null>(null)
   const isStreamCompleteRef = useRef(false)
+  const [isStreaming, setIsStreaming] = useState(false)
 
   const sendStreamRequest = useCallback(
-    (
-      payload: ChatCompletionRequest,
-      onUpdate: (type: 'reasoning' | 'content', chunk: string) => void,
-      onComplete: () => void,
-      onError: (error: string, errorCode?: string) => void
-    ) => {
+    (payload: ChatCompletionRequest, callbacks: StreamCallbacks) => {
+      const { onUpdate, onComplete, onError, onDebug } = callbacks
+      const sseMessages: string[] = []
+
+      onDebug?.({
+        request: JSON.stringify(payload, null, 2),
+        sseMessages,
+        response: null,
+      })
+
       const source = new SSE(API_ENDPOINTS.CHAT_COMPLETIONS, {
         headers: getCommonHeaders(),
         method: 'POST',
@@ -44,22 +60,38 @@ export function useStreamRequest() {
 
       sseSourceRef.current = source
       isStreamCompleteRef.current = false
+      setIsStreaming(true)
 
       const closeSource = () => {
         source.close()
         sseSourceRef.current = null
+        setIsStreaming(false)
       }
 
       const handleError = (errorMessage: string, errorCode?: string) => {
         if (!isStreamCompleteRef.current) {
           onError(errorMessage, errorCode)
+          onDebug?.({
+            request: JSON.stringify(payload, null, 2),
+            sseMessages,
+            response: errorMessage,
+          })
           closeSource()
         }
       }
 
       source.addEventListener('message', (e: MessageEvent) => {
+        if (e.data) {
+          sseMessages.push(String(e.data))
+        }
+
         if (e.data === '[DONE]') {
           isStreamCompleteRef.current = true
+          onDebug?.({
+            request: JSON.stringify(payload, null, 2),
+            sseMessages: [...sseMessages],
+            response: sseMessages.join('\n'),
+          })
           closeSource()
           onComplete()
           return
@@ -85,7 +117,6 @@ export function useStreamRequest() {
       })
 
       source.addEventListener('error', (e: Event & { data?: string }) => {
-        // Only handle errors if stream didn't complete normally
         if (source.readyState !== 2) {
           // eslint-disable-next-line no-console
           console.error('SSE Error:', e)
@@ -101,7 +132,7 @@ export function useStreamRequest() {
                 errorCode = parsed.error.code || undefined
               }
             } catch {
-              // not JSON, use raw string
+              // not JSON
             }
           }
           handleError(errorMessage, errorCode)
@@ -130,6 +161,7 @@ export function useStreamRequest() {
         console.error('Failed to start SSE stream:', error)
         onError(ERROR_MESSAGES.STREAM_START_ERROR)
         sseSourceRef.current = null
+        setIsStreaming(false)
       }
     },
     []
@@ -140,15 +172,12 @@ export function useStreamRequest() {
       sseSourceRef.current.close()
       sseSourceRef.current = null
     }
+    setIsStreaming(false)
   }, [])
-
-  // eslint-disable-next-line react-hooks/refs
-  const isStreaming = sseSourceRef.current !== null
 
   return {
     sendStreamRequest,
     stopStream,
-    // eslint-disable-next-line react-hooks/refs
     isStreaming,
   }
 }

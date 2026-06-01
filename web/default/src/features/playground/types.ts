@@ -117,6 +117,28 @@ export interface PlaygroundConfig {
   presence_penalty: number
   seed: number | null
   stream: boolean
+  imageEnabled: boolean
+  imageUrls: string[]
+}
+
+export type PlaygroundStoredConfig = {
+  inputs: PlaygroundConfig
+  parameterEnabled: ParameterEnabled
+  showDebugPanel: boolean
+  customRequestMode: boolean
+  customRequestBody: string
+  timestamp?: string
+}
+
+export type DebugTabId = 'preview' | 'request' | 'response'
+
+export type PlaygroundDebugData = {
+  request: string | null
+  response: string | null
+  timestamp: string | null
+  previewRequest: string | null
+  previewTimestamp: string | null
+  sseMessages: string[]
 }
 
 export interface ParameterEnabled {
