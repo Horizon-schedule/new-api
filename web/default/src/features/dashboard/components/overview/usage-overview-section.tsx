@@ -57,7 +57,8 @@ function ChartFallback() {
 
 export function UsageOverviewSection() {
   const { status } = useStatus()
-  const { loading, stats, granularity, quotaData } = useOverviewStats()
+  const { loading, userDataLoading, stats, granularity, quotaData, userQuotaData } =
+    useOverviewStats()
 
   const apiInfoEnabled = status?.api_info_enabled ?? true
   const announcementsEnabled = status?.announcements_enabled ?? true
@@ -82,7 +83,9 @@ export function UsageOverviewSection() {
           <Suspense fallback={<ChartFallback />}>
             <LazyOverviewChartsPanel
               data={quotaData}
+              userData={userQuotaData}
               loading={loading}
+              userDataLoading={userDataLoading}
               timeGranularity={granularity || DEFAULT_TIME_GRANULARITY}
               defaultTab='1'
             />

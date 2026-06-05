@@ -117,10 +117,11 @@ func GetQuotaDataByUserId(userId int, startTime int64, endTime int64) (quotaData
 
 func GetQuotaDataGroupByUser(startTime int64, endTime int64) (quotaData []*QuotaData, err error) {
 	var quotaDatas []*QuotaData
+	// Group by user_id so renamed or legacy rows without username still aggregate per user.
 	err = DB.Table("quota_data").
-		Select("username, created_at, sum(count) as count, sum(quota) as quota, sum(token_used) as token_used").
+		Select("user_id, MAX(username) as username, created_at, SUM(count) as count, SUM(quota) as quota, SUM(token_used) as token_used").
 		Where("created_at >= ? and created_at <= ?", startTime, endTime).
-		Group("username, created_at").
+		Group("user_id, created_at").
 		Find(&quotaDatas).Error
 	return quotaDatas, err
 }

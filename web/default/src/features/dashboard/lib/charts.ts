@@ -705,6 +705,13 @@ export function processChartData(
 
 const USER_COLOR_FALLBACKS = [...USER_CHART_COLORS]
 
+function resolveQuotaUsername(item: QuotaDataItem): string {
+  const name = item.username?.trim()
+  if (name) return name
+  if (item.user_id) return `User ${item.user_id}`
+  return 'unknown'
+}
+
 export function processUserChartData(
   data: QuotaDataItem[],
   timeGranularity: TimeGranularity = 'day',
@@ -765,7 +772,7 @@ export function processUserChartData(
 
   const userQuotaTotal = new Map<string, number>()
   data.forEach((item) => {
-    const username = item.username || 'unknown'
+    const username = resolveQuotaUsername(item)
     const prev = userQuotaTotal.get(username) || 0
     userQuotaTotal.set(username, prev + (Number(item.quota) || 0))
   })
@@ -798,7 +805,7 @@ export function processUserChartData(
     const ts = Number(item.created_at)
     const timeKey = formatChartTime(ts, timeGranularity)
     allTimePoints.add(timeKey)
-    const user = item.username || 'unknown'
+    const user = resolveQuotaUsername(item)
     if (!topUserSet.has(user)) return
     if (!timeUserMap.has(timeKey)) timeUserMap.set(timeKey, new Map())
     const map = timeUserMap.get(timeKey)!

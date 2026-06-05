@@ -56,7 +56,9 @@ const OVERVIEW_CHART_TABS: Array<{
 
 interface OverviewChartsPanelProps {
   data: QuotaDataItem[]
+  userData?: QuotaDataItem[]
   loading?: boolean
+  userDataLoading?: boolean
   timeGranularity?: TimeGranularity
   defaultTab?: OverviewChartTab
 }
@@ -116,6 +118,8 @@ export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
 
   const chartPayload = useMemo(() => {
     const source = props.loading ? [] : props.data
+    const userSource =
+      props.userDataLoading ?? false ? [] : (props.userData ?? [])
     const modelCharts = processChartData(
       source,
       timeGranularity,
@@ -124,7 +128,7 @@ export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
       chartRadius
     )
     const userCharts = processUserChartData(
-      source,
+      userSource,
       timeGranularity,
       t,
       10,
@@ -153,17 +157,25 @@ export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
     customization.preset,
     props.data,
     props.loading,
+    props.userData,
+    props.userDataLoading,
     t,
     timeGranularity,
   ])
+
+  const isUserTab = activeTab === '5' || activeTab === '6'
+  const chartLoading =
+    isUserTab && isAdmin
+      ? props.userDataLoading ?? false
+      : (props.loading ?? false)
 
   const spec = chartPayload[activeTab]
   const specType = typeof spec?.type === 'string' ? spec.type : activeTab
   const chartKey = [
     activeTab,
     specType,
-    props.loading ? 'loading' : 'ready',
-    props.data.length,
+    chartLoading ? 'loading' : 'ready',
+    isUserTab ? (props.userData?.length ?? 0) : props.data.length,
     resolvedTheme,
     customization.preset,
   ].join('-')

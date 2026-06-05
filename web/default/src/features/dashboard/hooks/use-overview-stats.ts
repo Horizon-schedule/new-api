@@ -21,7 +21,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth-store'
 import { ROLE } from '@/lib/roles'
 import { computeTimeRange } from '@/lib/time'
-import { getUserQuotaDates } from '@/features/dashboard/api'
+import { getUserQuotaDates, getUserQuotaDataByUsers } from '@/features/dashboard/api'
 import {
   DEFAULT_TIME_GRANULARITY,
   TIME_RANGE_BY_GRANULARITY,
@@ -83,6 +83,23 @@ export function useOverviewStats() {
     staleTime: 60 * 1000,
   })
 
+  const userQuery = useQuery({
+    queryKey: [
+      'dashboard',
+      'overview',
+      'user-quota',
+      timeRange.start_timestamp,
+      timeRange.end_timestamp,
+    ],
+    queryFn: () =>
+      getUserQuotaDataByUsers({
+        start_timestamp: timeRange.start_timestamp,
+        end_timestamp: timeRange.end_timestamp,
+      }),
+    enabled: isAdmin,
+    staleTime: 60 * 1000,
+  })
+
   const stats = useMemo(
     () =>
       processOverviewStats(
@@ -95,8 +112,10 @@ export function useOverviewStats() {
 
   return {
     loading: query.isLoading,
+    userDataLoading: isAdmin ? userQuery.isLoading : false,
     stats,
     granularity,
     quotaData: query.data?.data ?? [],
+    userQuotaData: isAdmin && userQuery.data?.success ? userQuery.data.data : [],
   }
 }
