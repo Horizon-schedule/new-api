@@ -261,27 +261,24 @@ func RecalculateTaskQuotaByTokens(ctx context.Context, task *model.Task, totalTo
 		return
 	}
 
-	// 获取用户和组的倍率信息
-	group := task.Group
-	if group == "" {
-		user, err := model.GetUserById(task.UserId, false)
-		if err == nil {
-			group = user.Group
-		}
+	// 获取用户分组与令牌/任务分组的倍率（与 HandleGroupRatio / GetUserGroupRatio 一致）
+	usingGroup := task.Group
+	userGroup := ""
+	user, err := model.GetUserById(task.UserId, false)
+	if err == nil {
+		userGroup = user.Group
 	}
-	if group == "" {
+	if usingGroup == "" {
+		usingGroup = userGroup
+	}
+	if usingGroup == "" {
 		return
 	}
-
-	groupRatio := ratio_setting.GetGroupRatio(group)
-	userGroupRatio, hasUserGroupRatio := ratio_setting.GetGroupGroupRatio(group, group)
-
-	var finalGroupRatio float64
-	if hasUserGroupRatio {
-		finalGroupRatio = userGroupRatio
-	} else {
-		finalGroupRatio = groupRatio
+	if userGroup == "" {
+		userGroup = usingGroup
 	}
+
+	finalGroupRatio := GetUserGroupRatio(userGroup, usingGroup)
 
 	// 计算 OtherRatios 乘积（视频折扣、时长等）
 	otherMultiplier := 1.0
