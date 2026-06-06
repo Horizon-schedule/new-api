@@ -65,6 +65,7 @@ import {
   isTimingLogType,
 } from '../../lib/utils'
 import type { LogOtherData } from '../../types'
+import { BillingProcessSection } from './billing-process-section'
 import { RequestTracingSection } from './request-tracing-section'
 
 function timingTextColorClass(
@@ -859,6 +860,11 @@ export function DetailsDialog(props: DetailsDialogProps) {
             {/* Token breakdown (for consume/error types with token data) */}
             {isDisplayableType(props.log.type) && other && (
               <TokenBreakdown log={props.log} other={other} />
+            )}
+
+            {/* Billing calculation steps (consume type) */}
+            {isConsume && other && !isViolation && (
+              <BillingProcessSection log={props.log} other={other} />
             )}
 
             {/* Billing breakdown (consume type) */}
