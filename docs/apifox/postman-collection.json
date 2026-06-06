@@ -1,0 +1,225 @@
+{
+  "info": {
+    "_postman_id": "ai-models-api-new-api",
+    "name": "AI 模型 API（GPT/Qwen/DeepSeek/Claude/Gemini）",
+    "description": "new-api 网关接口。导入 Apifox：项目设置 → 导入数据 → Postman → 选本文件。\n\n导入后改 Collection 变量 baseUrl 和 api_key。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{api_key}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.example.com",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "sk-请替换为控制台令牌",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01-模型列表",
+      "item": [
+        {
+          "name": "获取模型列表 OpenAI 格式",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/models",
+            "description": "GPT / Qwen / DeepSeek / Gemini 兼容名"
+          }
+        },
+        {
+          "name": "获取模型列表 Gemini 格式",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1beta/models"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02-GPT 系列",
+      "item": [
+        {
+          "name": "GPT-4o 对话",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"gpt-4o\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"你好\"}],\n  \"stream\": false\n}"
+            },
+            "url": "{{baseUrl}}/v1/chat/completions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03-Qwen 系列",
+      "item": [
+        {
+          "name": "Qwen Plus 对话",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"qwen-plus\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"你好\"}],\n  \"stream\": false\n}"
+            },
+            "url": "{{baseUrl}}/v1/chat/completions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04-DeepSeek 系列",
+      "item": [
+        {
+          "name": "DeepSeek Chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"deepseek-chat\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"你好\"}],\n  \"stream\": false\n}"
+            },
+            "url": "{{baseUrl}}/v1/chat/completions"
+          }
+        },
+        {
+          "name": "DeepSeek Reasoner 推理",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"deepseek-reasoner\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"9.11 和 9.8 哪个大？\"}],\n  \"stream\": false\n}"
+            },
+            "url": "{{baseUrl}}/v1/chat/completions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05-Claude 与 Claude Code",
+      "item": [
+        {
+          "name": "Claude Messages 对话",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "anthropic-version",
+                "value": "2023-06-01"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 4096,\n  \"messages\": [{\"role\": \"user\", \"content\": \"写一段 Python 快速排序\"}]\n}"
+            },
+            "url": "{{baseUrl}}/v1/messages",
+            "description": "Claude Code 设置 ANTHROPIC_BASE_URL={{baseUrl}} ANTHROPIC_API_KEY={{api_key}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06-Gemini 系列",
+      "item": [
+        {
+          "name": "Gemini 原生 generateContent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [{\"text\": \"你好\"}]\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/v1beta/models/gemini-2.5-flash:generateContent"
+          }
+        },
+        {
+          "name": "Gemini OpenAI 兼容",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"gemini-2.5-flash\",\n  \"messages\": [{\"role\": \"user\", \"content\": \"你好\"}],\n  \"stream\": false\n}"
+            },
+            "url": "{{baseUrl}}/v1/chat/completions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "07-嵌入 Embeddings",
+      "item": [
+        {
+          "name": "创建嵌入",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"text-embedding-3-small\",\n  \"input\": \"要向量化的文本\"\n}"
+            },
+            "url": "{{baseUrl}}/v1/embeddings"
+          }
+        }
+      ]
+    }
+  ]
+}

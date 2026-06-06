@@ -1,0 +1,522 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "AI 模型 API 文档",
+    "description": "统一网关接口：支持 **GPT**、**通义千问 Qwen**、**DeepSeek**、**Claude / Claude Code**、**Google Gemini**。\n\n## 使用前配置\n\n1. 在 Apifox **环境** 中设置 `baseUrl`（你的网关根地址）和 `api_key`（控制台令牌）。\n2. **切勿** 将 `docs.newapi.pro` 当作 API 地址——那是文档网站，会导致 `fetch failed`。\n3. 详细说明见左侧 **文档** 中的「引言与快速开始」。",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "模型列表",
+      "description": "查询当前账号可用的模型"
+    },
+    {
+      "name": "GPT 系列",
+      "description": "OpenAI 兼容 Chat Completions，model 使用 gpt-* / o* 等"
+    },
+    {
+      "name": "Qwen 系列",
+      "description": "通义千问，OpenAI 兼容格式，model 使用 qwen-* 等"
+    },
+    {
+      "name": "DeepSeek 系列",
+      "description": "DeepSeek，OpenAI 兼容格式，model 使用 deepseek-* 等"
+    },
+    {
+      "name": "Claude / Claude Code",
+      "description": "Anthropic Messages 原生格式，Claude Code 配置 ANTHROPIC_BASE_URL 指向网关"
+    },
+    {
+      "name": "Gemini 系列",
+      "description": "Google Gemini 原生 generateContent 或 OpenAI 兼容 Chat"
+    }
+  ],
+  "paths": {
+    "/v1/models": {
+      "get": {
+        "summary": "获取模型列表（OpenAI 格式）",
+        "description": "返回当前令牌可用的模型 ID 列表。\n\n适用于 **GPT、Qwen、DeepSeek** 等 OpenAI 兼容客户端。\n\nClaude 格式列表：同路径 + 请求头 `anthropic-version` + `x-api-key`。\n\nGemini 格式列表：见 `GET /v1beta/models`。",
+        "operationId": "listModels",
+        "tags": ["模型列表"],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未授权",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    },
+    "/v1beta/models": {
+      "get": {
+        "summary": "获取模型列表（Gemini 格式）",
+        "description": "返回 Gemini 原生格式的模型列表，供 Google SDK 或原生 REST 使用。",
+        "operationId": "listGeminiModels",
+        "tags": ["模型列表", "Gemini 系列"],
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "401": {
+            "description": "未授权"
+          }
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    },
+    "/v1/chat/completions": {
+      "post": {
+        "summary": "创建聊天对话（OpenAI 兼容）",
+        "description": "一条接口调用多种模型，通过 `model` 字段区分：\n\n| 系列 | model 示例 |\n|------|------------|\n| GPT | `gpt-4o`、`gpt-4.1-mini`、`o3-mini` |\n| Qwen | `qwen-plus`、`qwen-max`、`qwen-turbo`、`qwen3-coder-plus` |\n| DeepSeek | `deepseek-chat`、`deepseek-reasoner` |\n| Gemini（兼容模式） | `gemini-2.5-flash`、`gemini-2.5-pro` |\n\n流式响应：请求体设置 stream 为 true。\n\n> 模型名以 `GET /v1/models` 返回为准。",
+        "operationId": "createChatCompletion",
+        "tags": ["GPT 系列", "Qwen 系列", "DeepSeek 系列", "Gemini 系列"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "examples": {
+                "gpt-4o": {
+                  "summary": "GPT-4o 对话",
+                  "value": {
+                    "model": "gpt-4o",
+                    "messages": [{"role": "user", "content": "你好，请用一句话介绍你自己。"}],
+                    "stream": false,
+                    "temperature": 0.7
+                  }
+                },
+                "qwen-plus": {
+                  "summary": "Qwen Plus 对话",
+                  "value": {
+                    "model": "qwen-plus",
+                    "messages": [{"role": "user", "content": "用三句话介绍通义千问。"}],
+                    "stream": false
+                  }
+                },
+                "deepseek-chat": {
+                  "summary": "DeepSeek 对话",
+                  "value": {
+                    "model": "deepseek-chat",
+                    "messages": [{"role": "user", "content": "解释一下快速排序的思路。"}],
+                    "stream": false
+                  }
+                },
+                "deepseek-reasoner": {
+                  "summary": "DeepSeek 推理模型",
+                  "value": {
+                    "model": "deepseek-reasoner",
+                    "messages": [{"role": "user", "content": "9.11 和 9.8 哪个大？请逐步推理。"}],
+                    "stream": false
+                  }
+                },
+                "gemini-openai-compat": {
+                  "summary": "Gemini（OpenAI 兼容）",
+                  "value": {
+                    "model": "gemini-2.5-flash",
+                    "messages": [{"role": "user", "content": "你好"}],
+                    "stream": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                }
+              }
+            }
+          },
+          "400": {"description": "参数错误"},
+          "401": {"description": "未授权"},
+          "429": {"description": "限流"}
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "summary": "Claude 聊天 / Claude Code",
+        "description": "Anthropic **Messages API** 原生格式。\n\n**Claude Code 配置：**\n- `ANTHROPIC_BASE_URL` = 你的 `baseUrl`（不含 `/v1`）\n- `ANTHROPIC_API_KEY` = 控制台令牌 `sk-xxx`\n\n**必填请求头：** `anthropic-version: 2023-06-01`\n\n**model 示例：** `claude-sonnet-4-20250514`、`claude-opus-4-20250514`",
+        "operationId": "createClaudeMessage",
+        "tags": ["Claude / Claude Code"],
+        "parameters": [
+          {
+            "name": "anthropic-version",
+            "in": "header",
+            "required": true,
+            "description": "Anthropic API 版本",
+            "schema": {
+              "type": "string",
+              "default": "2023-06-01",
+              "example": "2023-06-01"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaudeRequest"
+              },
+              "examples": {
+                "claude-sonnet": {
+                  "summary": "Claude Sonnet 对话",
+                  "value": {
+                    "model": "claude-sonnet-4-20250514",
+                    "max_tokens": 4096,
+                    "messages": [{"role": "user", "content": "写一段 Python 快速排序代码。"}]
+                  }
+                },
+                "claude-code": {
+                  "summary": "Claude Code 编码场景",
+                  "value": {
+                    "model": "claude-sonnet-4-20250514",
+                    "max_tokens": 8192,
+                    "messages": [{"role": "user", "content": "Review this function and suggest improvements."}]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaudeResponse"
+                }
+              }
+            }
+          },
+          "401": {"description": "未授权"}
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    },
+    "/v1beta/models/{model}:generateContent": {
+      "post": {
+        "summary": "Gemini 对话（原生 generateContent）",
+        "description": "Google Gemini **原生 REST** 格式，适用于 Gemini SDK。\n\n**model 路径参数示例：** `gemini-2.5-flash`、`gemini-2.5-pro`\n\n完整 URL 示例：`POST /v1beta/models/gemini-2.5-flash:generateContent`",
+        "operationId": "geminiGenerateContent",
+        "tags": ["Gemini 系列"],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "description": "Gemini 模型名",
+            "schema": {
+              "type": "string",
+              "example": "gemini-2.5-flash"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiGenerateRequest"
+              },
+              "example": {
+                "contents": [
+                  {
+                    "role": "user",
+                    "parts": [{"text": "用中文解释什么是机器学习。"}]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "成功"},
+          "401": {"description": "未授权"}
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    },
+    "/v1beta/models/{model}:streamGenerateContent": {
+      "post": {
+        "summary": "Gemini 流式对话（streamGenerateContent）",
+        "description": "Gemini 原生流式输出。URL 示例：`POST /v1beta/models/gemini-2.5-flash:streamGenerateContent`",
+        "operationId": "geminiStreamGenerateContent",
+        "tags": ["Gemini 系列"],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "gemini-2.5-flash"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiGenerateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "SSE 流式响应"},
+          "401": {"description": "未授权"}
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    },
+    "/v1/embeddings": {
+      "post": {
+        "summary": "文本嵌入（Embeddings）",
+        "description": "OpenAI 兼容嵌入接口。`model` 可为 `text-embedding-3-small`、Qwen 嵌入模型等（以模型列表为准）。",
+        "operationId": "createEmbedding",
+        "tags": ["GPT 系列", "Qwen 系列"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmbeddingRequest"
+              },
+              "example": {
+                "model": "text-embedding-3-small",
+                "input": "需要向量化的文本"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "成功"},
+          "401": {"description": "未授权"}
+        },
+        "security": [{"BearerAuth": []}]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "sk-xxx",
+        "description": "控制台「令牌」中的 API Key。Apifox 环境变量：`{{api_key}}`"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {"type": "string"},
+              "type": {"type": "string"},
+              "code": {"type": "string"}
+            }
+          }
+        }
+      },
+      "ModelList": {
+        "type": "object",
+        "properties": {
+          "object": {"type": "string", "example": "list"},
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string"},
+                "object": {"type": "string"},
+                "owned_by": {"type": "string"}
+              }
+            }
+          }
+        }
+      },
+      "ChatCompletionRequest": {
+        "type": "object",
+        "required": ["model", "messages"],
+        "properties": {
+          "model": {"type": "string", "description": "模型 ID"},
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["role", "content"],
+              "properties": {
+                "role": {"type": "string", "enum": ["system", "user", "assistant"]},
+                "content": {"type": "string"}
+              }
+            }
+          },
+          "stream": {"type": "boolean", "default": false},
+          "temperature": {"type": "number"},
+          "max_tokens": {"type": "integer"}
+        }
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "object": {"type": "string"},
+          "model": {"type": "string"},
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {"type": "integer"},
+                "message": {
+                  "type": "object",
+                  "properties": {
+                    "role": {"type": "string"},
+                    "content": {"type": "string"}
+                  }
+                },
+                "finish_reason": {"type": "string"}
+              }
+            }
+          },
+          "usage": {
+            "type": "object",
+            "properties": {
+              "prompt_tokens": {"type": "integer"},
+              "completion_tokens": {"type": "integer"},
+              "total_tokens": {"type": "integer"}
+            }
+          }
+        }
+      },
+      "ClaudeRequest": {
+        "type": "object",
+        "required": ["model", "max_tokens", "messages"],
+        "properties": {
+          "model": {"type": "string", "example": "claude-sonnet-4-20250514"},
+          "max_tokens": {"type": "integer", "minimum": 1},
+          "system": {"type": "string"},
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["role", "content"],
+              "properties": {
+                "role": {"type": "string", "enum": ["user", "assistant"]},
+                "content": {"type": "string"}
+              }
+            }
+          },
+          "stream": {"type": "boolean"}
+        }
+      },
+      "ClaudeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"type": "string"},
+          "role": {"type": "string"},
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "string"},
+                "text": {"type": "string"}
+              }
+            }
+          },
+          "model": {"type": "string"},
+          "usage": {
+            "type": "object",
+            "properties": {
+              "input_tokens": {"type": "integer"},
+              "output_tokens": {"type": "integer"}
+            }
+          }
+        }
+      },
+      "GeminiGenerateRequest": {
+        "type": "object",
+        "required": ["contents"],
+        "properties": {
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {"type": "string"},
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "generationConfig": {
+            "type": "object",
+            "properties": {
+              "temperature": {"type": "number"},
+              "maxOutputTokens": {"type": "integer"}
+            }
+          }
+        }
+      },
+      "EmbeddingRequest": {
+        "type": "object",
+        "required": ["model", "input"],
+        "properties": {
+          "model": {"type": "string"},
+          "input": {
+            "oneOf": [
+              {"type": "string"},
+              {"type": "array", "items": {"type": "string"}}
+            ]
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com",
+      "description": "API 网关根地址（导入后请在 Apifox 右上角「环境」→「前置 URL」改成你的真实域名，如 https://你的域名.com 或 http://127.0.0.1:3000）"
+    }
+  ],
+  "security": [{"BearerAuth": []}]
+}

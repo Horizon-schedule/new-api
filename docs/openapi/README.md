@@ -1,5 +1,7 @@
 # OpenAPI 与 Apifox 调试说明
 
+> **给客户看的完整文档包（推荐）**：见 [`../apifox/`](../apifox/) — 含 OpenAPI、环境、7 篇 Markdown，导入 Apifox 后发布即可。
+
 本目录包含两份 OpenAPI 规范：
 
 | 文件 | 用途 | 路径前缀 |
