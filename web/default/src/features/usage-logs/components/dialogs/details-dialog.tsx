@@ -65,6 +65,7 @@ import {
   isTimingLogType,
 } from '../../lib/utils'
 import type { LogOtherData } from '../../types'
+import { RequestTracingSection } from './request-tracing-section'
 
 function timingTextColorClass(
   variant: 'success' | 'warning' | 'danger'
@@ -418,8 +419,10 @@ export function DetailsDialog(props: DetailsDialogProps) {
     !!other?.expr_b64
   const hasAudioTokens = other?.ws || other?.audio
   const showTiming = isTimingLogType(props.log.type)
-  const showAdminIp =
-    !!props.log.ip && (showTiming || (props.isAdmin && isTopup))
+  const showLegacyIpRow =
+    !!props.log.ip &&
+    !isConsume &&
+    (showTiming || (props.isAdmin && isTopup))
   const adminInfo = other?.admin_info
   const topupAuditFields =
     isTopup && props.isAdmin && adminInfo
@@ -510,6 +513,14 @@ export function DetailsDialog(props: DetailsDialogProps) {
 
         <ScrollArea className='max-h-[70vh] min-w-0 overflow-hidden pr-2 max-sm:max-h-[calc(100dvh-7rem)] sm:pr-4'>
           <div className='w-full max-w-full min-w-0 space-y-2.5 overflow-hidden py-1 sm:space-y-3'>
+            {isConsume && (
+              <RequestTracingSection
+                log={props.log}
+                isAdmin={props.isAdmin}
+                open={props.open}
+              />
+            )}
+
             {/* Overview section - key identifiers */}
             <div className='min-w-0 space-y-1'>
               {props.log.request_id && (
@@ -565,7 +576,7 @@ export function DetailsDialog(props: DetailsDialogProps) {
                 />
               )}
 
-              {showAdminIp && (
+              {showLegacyIpRow && (
                 <DetailRow
                   label={t('IP Address')}
                   value={

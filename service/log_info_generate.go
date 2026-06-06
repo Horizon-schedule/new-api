@@ -33,6 +33,23 @@ func appendRequestPath(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, other
 	}
 }
 
+func appendClientIdentity(ctx *gin.Context, other map[string]interface{}) {
+	if other == nil || ctx == nil || ctx.Request == nil {
+		return
+	}
+	req := ctx.Request
+	originator := strings.TrimSpace(req.Header.Get("Originator"))
+	if originator == "" {
+		originator = strings.TrimSpace(req.Header.Get("originator"))
+	}
+	if originator != "" {
+		other["originator"] = originator
+	}
+	if userAgent := strings.TrimSpace(req.Header.Get("User-Agent")); userAgent != "" {
+		other["user_agent"] = userAgent
+	}
+}
+
 func GenerateTextOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, modelRatio, groupRatio, completionRatio float64,
 	cacheTokens int, cacheRatio float64, modelPrice float64, userGroupRatio float64) map[string]interface{} {
 	other := make(map[string]interface{})
@@ -74,6 +91,7 @@ func GenerateTextOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, m
 
 	other["admin_info"] = adminInfo
 	appendRequestPath(ctx, relayInfo, other)
+	appendClientIdentity(ctx, other)
 	appendRequestConversionChain(relayInfo, other)
 	appendFinalRequestFormat(relayInfo, other)
 	appendBillingInfo(relayInfo, other)

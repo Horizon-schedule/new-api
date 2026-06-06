@@ -515,6 +515,85 @@ func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	return token
 }
 
+type TokenConsumeAudit struct {
+	TokenId           int      `json:"token_id"`
+	TokenName         string   `json:"token_name"`
+	TokenCreatedTime  int64    `json:"token_created_time"`
+	TokenAccessedTime int64    `json:"token_accessed_time"`
+	FirstConsumeAt    int64    `json:"first_consume_at"`
+	LastConsumeAt     int64    `json:"last_consume_at"`
+	ConsumeCount      int64    `json:"consume_count"`
+	DistinctIps       []string `json:"distinct_ips"`
+}
+
+func GetTokenConsumeAudit(userId int, tokenId int, tokenName string) (*TokenConsumeAudit, error) {
+	if tokenId <= 0 && tokenName == "" {
+		return nil, errors.New("token_id or token_name is required")
+	}
+
+	audit := &TokenConsumeAudit{TokenId: tokenId, DistinctIps: []string{}}
+
+	if tokenId > 0 {
+		token, err := GetTokenById(tokenId)
+		if err != nil {
+			return nil, err
+		}
+		if userId > 0 && token.UserId != userId {
+			return nil, errors.New("token not found")
+		}
+		audit.TokenName = token.Name
+		audit.TokenCreatedTime = token.CreatedTime
+		audit.TokenAccessedTime = token.AccessedTime
+		userId = token.UserId
+		audit.TokenId = token.Id
+	}
+
+	tx := LOG_DB.Model(&Log{}).Where("type = ?", LogTypeConsume)
+	if userId > 0 {
+		tx = tx.Where("user_id = ?", userId)
+	}
+	if tokenId > 0 {
+		tx = tx.Where("token_id = ?", tokenId)
+	} else {
+		tx = tx.Where("token_name = ?", tokenName)
+	}
+
+	var stats struct {
+		FirstConsumeAt int64
+		LastConsumeAt  int64
+		Count          int64
+	}
+	if err := tx.Select("MIN(created_at) as first_consume_at, MAX(created_at) as last_consume_at, COUNT(*) as count").Scan(&stats).Error; err != nil {
+		return nil, err
+	}
+	audit.FirstConsumeAt = stats.FirstConsumeAt
+	audit.LastConsumeAt = stats.LastConsumeAt
+	audit.ConsumeCount = stats.Count
+
+	if audit.TokenName == "" {
+		var sample Log
+		if err := tx.Order("created_at asc").Limit(1).Find(&sample).Error; err == nil && sample.TokenName != "" {
+			audit.TokenName = sample.TokenName
+		}
+	}
+
+	ipTx := LOG_DB.Model(&Log{}).Where("type = ?", LogTypeConsume).Where("ip <> ''")
+	if userId > 0 {
+		ipTx = ipTx.Where("user_id = ?", userId)
+	}
+	if tokenId > 0 {
+		ipTx = ipTx.Where("token_id = ?", tokenId)
+	} else {
+		ipTx = ipTx.Where("token_name = ?", tokenName)
+	}
+	var ips []string
+	if err := ipTx.Distinct().Pluck("ip", &ips).Error; err != nil {
+		return nil, err
+	}
+	audit.DistinctIps = ips
+	return audit, nil
+}
+
 func DeleteOldLog(ctx context.Context, targetTimestamp int64, limit int) (int64, error) {
 	var total int64 = 0
 

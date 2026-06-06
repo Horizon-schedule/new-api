@@ -90,6 +90,33 @@ export async function getUserInfo(
   return res.data
 }
 
+export interface TokenConsumeAudit {
+  token_id: number
+  token_name: string
+  token_created_time: number
+  token_accessed_time: number
+  first_consume_at: number
+  last_consume_at: number
+  consume_count: number
+  distinct_ips: string[]
+}
+
+export async function getTokenConsumeAudit(
+  params: {
+    user_id?: number
+    token_id?: number
+    token_name?: string
+  },
+  isAdmin: boolean
+): Promise<{ success: boolean; message?: string; data?: TokenConsumeAudit }> {
+  const query = buildQueryParams(params as Record<string, unknown>)
+  const path = isAdmin
+    ? '/api/log/token_audit'
+    : '/api/log/self/token_audit'
+  const res = await api.get(`${path}?${query}`)
+  return res.data
+}
+
 // ============================================================================
 // Midjourney (Drawing) Logs API
 // ============================================================================

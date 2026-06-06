@@ -150,6 +150,30 @@ func GetLogsSelfStat(c *gin.Context) {
 	return
 }
 
+func GetTokenConsumeAudit(c *gin.Context) {
+	userId, _ := strconv.Atoi(c.Query("user_id"))
+	tokenId, _ := strconv.Atoi(c.Query("token_id"))
+	tokenName := c.Query("token_name")
+	audit, err := model.GetTokenConsumeAudit(userId, tokenId, tokenName)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, audit)
+}
+
+func GetTokenConsumeAuditSelf(c *gin.Context) {
+	userId := c.GetInt("id")
+	tokenId, _ := strconv.Atoi(c.Query("token_id"))
+	tokenName := c.Query("token_name")
+	audit, err := model.GetTokenConsumeAudit(userId, tokenId, tokenName)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	common.ApiSuccess(c, audit)
+}
+
 func DeleteHistoryLogs(c *gin.Context) {
 	targetTimestamp, _ := strconv.ParseInt(c.Query("target_timestamp"), 10, 64)
 	if targetTimestamp == 0 {
