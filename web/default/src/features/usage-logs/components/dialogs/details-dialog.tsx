@@ -76,6 +76,34 @@ function timingTextColorClass(
   return 'text-rose-600'
 }
 
+function CopyableValue(props: {
+  value: string
+  copiedText: string | null
+  onCopy: (text: string) => void
+  copyLabel: string
+}) {
+  const copied = props.copiedText === props.value
+
+  return (
+    <span className='inline-flex max-w-full min-w-0 items-center gap-1'>
+      <span className='min-w-0 break-all'>{props.value}</span>
+      <button
+        type='button'
+        className='text-muted-foreground hover:text-foreground shrink-0'
+        onClick={() => props.onCopy(props.value)}
+        aria-label={props.copyLabel}
+        title={props.copyLabel}
+      >
+        {copied ? (
+          <Check className='size-3 text-emerald-600' />
+        ) : (
+          <Copy className='size-3' />
+        )}
+      </button>
+    </span>
+  )
+}
+
 function DetailRow(props: {
   label: React.ReactNode
   value: React.ReactNode
@@ -527,14 +555,28 @@ export function DetailsDialog(props: DetailsDialogProps) {
               {props.log.request_id && (
                 <DetailRow
                   label={t('Request ID')}
-                  value={props.log.request_id}
+                  value={
+                    <CopyableValue
+                      value={props.log.request_id}
+                      copiedText={copiedText}
+                      onCopy={copyToClipboard}
+                      copyLabel={t('Copy to clipboard')}
+                    />
+                  }
                   mono
                 />
               )}
               {props.log.upstream_request_id && (
                 <DetailRow
                   label={t('Upstream Request ID')}
-                  value={props.log.upstream_request_id}
+                  value={
+                    <CopyableValue
+                      value={props.log.upstream_request_id}
+                      copiedText={copiedText}
+                      onCopy={copyToClipboard}
+                      copyLabel={t('Copy to clipboard')}
+                    />
+                  }
                   mono
                 />
               )}
