@@ -57,8 +57,18 @@ function ChartFallback() {
 
 export function UsageOverviewSection() {
   const { status } = useStatus()
-  const { loading, userDataLoading, stats, granularity, quotaData, userQuotaData } =
-    useOverviewStats()
+  const {
+    loading,
+    userDataLoading,
+    stats,
+    granularity,
+    quotaData,
+    userQuotaData,
+    filters,
+    updateTimeRange,
+    updateGranularity,
+    resetFilters,
+  } = useOverviewStats()
 
   const apiInfoEnabled = status?.api_info_enabled ?? true
   const announcementsEnabled = status?.announcements_enabled ?? true
@@ -88,6 +98,10 @@ export function UsageOverviewSection() {
               userDataLoading={userDataLoading}
               timeGranularity={granularity || DEFAULT_TIME_GRANULARITY}
               defaultTab='1'
+              filters={filters}
+              onTimeRangeChange={updateTimeRange}
+              onGranularityChange={updateGranularity}
+              onResetFilters={resetFilters}
             />
           </Suspense>
         </CardStaggerItem>

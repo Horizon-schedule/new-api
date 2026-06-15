@@ -16,36 +16,43 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth-store'
 import { ROLE } from '@/lib/roles'
-import { computeTimeRange } from '@/lib/time'
+import { computeTimeRange, type TimeGranularity } from '@/lib/time'
 import { getUserQuotaDates, getUserQuotaDataByUsers } from '@/features/dashboard/api'
 import {
   DEFAULT_TIME_GRANULARITY,
   TIME_RANGE_BY_GRANULARITY,
 } from '@/features/dashboard/constants'
 import {
-  buildDefaultDashboardFilters,
+  buildDefaultOverviewFilters,
   getSavedChartPreferences,
+  loadOverviewAnalyticsFilters,
+  saveGranularity,
+  saveOverviewAnalyticsFilters,
 } from '@/features/dashboard/lib'
 import { processOverviewStats } from '@/features/dashboard/lib/overview-trends'
+import type { DashboardFilters } from '@/features/dashboard/types'
 
 export function useOverviewStats() {
   const user = useAuthStore((state) => state.auth.user)
   const isAdmin = Boolean(user?.role && user.role >= ROLE.ADMIN)
   const chartPreferences = useMemo(() => getSavedChartPreferences(), [])
-  const filters = useMemo(
-    () => buildDefaultDashboardFilters(chartPreferences),
-    [chartPreferences]
+  const [filters, setFilters] = useState<DashboardFilters>(() =>
+    loadOverviewAnalyticsFilters(chartPreferences)
   )
+
   const granularity =
-    filters.time_granularity ?? chartPreferences.defaultTimeGranularity ?? DEFAULT_TIME_GRANULARITY
+    filters.time_granularity ??
+    chartPreferences.defaultTimeGranularity ??
+    DEFAULT_TIME_GRANULARITY
+
   const days =
     chartPreferences.defaultTimeRangeDays ??
     TIME_RANGE_BY_GRANULARITY[granularity] ??
-    1
+    7
 
   const timeRange = useMemo(
     () =>
@@ -62,6 +69,43 @@ export function useOverviewStats() {
     [timeRange.end_timestamp, timeRange.start_timestamp]
   )
 
+  const persistFilters = useCallback((next: DashboardFilters) => {
+    setFilters(next)
+    saveOverviewAnalyticsFilters(next)
+  }, [])
+
+  const updateTimeRange = useCallback(
+    (range: { start?: Date; end?: Date }) => {
+      setFilters((prev) => {
+        const next = {
+          ...prev,
+          start_timestamp: range.start,
+          end_timestamp: range.end,
+        }
+        saveOverviewAnalyticsFilters(next)
+        return next
+      })
+    },
+    []
+  )
+
+  const updateGranularity = useCallback((value: TimeGranularity) => {
+    saveGranularity(value)
+    setFilters((prev) => {
+      const next = {
+        ...prev,
+        time_granularity: value,
+      }
+      saveOverviewAnalyticsFilters(next)
+      return next
+    })
+  }, [])
+
+  const resetFilters = useCallback(() => {
+    const next = buildDefaultOverviewFilters(chartPreferences)
+    persistFilters(next)
+  }, [chartPreferences, persistFilters])
+
   const query = useQuery({
     queryKey: [
       'dashboard',
@@ -70,6 +114,7 @@ export function useOverviewStats() {
       timeRange.start_timestamp,
       timeRange.end_timestamp,
       granularity,
+      isAdmin,
     ],
     queryFn: async () =>
       getUserQuotaDates(
@@ -117,5 +162,9 @@ export function useOverviewStats() {
     granularity,
     quotaData: query.data?.data ?? [],
     userQuotaData: isAdmin && userQuery.data?.success ? userQuery.data.data : [],
+    filters,
+    updateTimeRange,
+    updateGranularity,
+    resetFilters,
   }
 }

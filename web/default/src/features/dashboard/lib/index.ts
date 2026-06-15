@@ -25,6 +25,9 @@ export {
   getSavedChartPreferences,
   saveChartPreferences,
   buildDefaultDashboardFilters,
+  buildDefaultOverviewFilters,
+  loadOverviewAnalyticsFilters,
+  saveOverviewAnalyticsFilters,
 } from './filters'
 export {
   getLatencyColorClass,

@@ -33,7 +33,9 @@ import {
   OVERVIEW_CHART_BODY_HEIGHT,
 } from '@/features/dashboard/constants'
 import { processChartData, processUserChartData } from '@/features/dashboard/lib'
+import type { DashboardFilters } from '@/features/dashboard/types'
 import type { QuotaDataItem } from '@/features/dashboard/types'
+import { OverviewChartsTimeFilter } from './overview-charts-time-filter'
 
 let themeManagerPromise: Promise<
   (typeof import('@visactor/vchart'))['ThemeManager']
@@ -61,6 +63,22 @@ interface OverviewChartsPanelProps {
   userDataLoading?: boolean
   timeGranularity?: TimeGranularity
   defaultTab?: OverviewChartTab
+  filters: DashboardFilters
+  onTimeRangeChange: (range: { start?: Date; end?: Date }) => void
+  onGranularityChange: (value: TimeGranularity) => void
+  onResetFilters: () => void
+}
+
+function hideChartTitle(spec: Record<string, unknown>): Record<string, unknown> {
+  const title = spec.title
+  if (!title || typeof title !== 'object') return spec
+  return {
+    ...spec,
+    title: {
+      ...(title as Record<string, unknown>),
+      visible: false,
+    },
+  }
 }
 
 export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
@@ -144,7 +162,7 @@ export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
       },
     }
 
-    return {
+    const specs = {
       '1': tab1Spec,
       '2': modelCharts.spec_model_line,
       '3': modelCharts.spec_pie,
@@ -152,6 +170,30 @@ export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
       '5': userCharts.spec_user_rank,
       '6': userCharts.spec_user_trend,
     } as Record<OverviewChartTab, Record<string, unknown>>
+
+    const titles = {
+      '1': {
+        title: t('Model Consumption Distribution'),
+        subtext: `${t('Total:')} ${modelCharts.totalQuotaDisplay}`,
+      },
+      '2': {
+        title: t('Call Trend'),
+      },
+      '3': {
+        title: t('Call Count Distribution'),
+      },
+      '4': {
+        title: t('Call Count Ranking'),
+      },
+      '5': {
+        title: t('User Consumption Ranking'),
+      },
+      '6': {
+        title: t('User Consumption Trend'),
+      },
+    } as Record<OverviewChartTab, { title: string; subtext?: string }>
+
+    return { specs, titles }
   }, [
     chartRadius,
     customization.preset,
@@ -169,7 +211,8 @@ export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
       ? props.userDataLoading ?? false
       : (props.loading ?? false)
 
-  const spec = chartPayload[activeTab]
+  const activeChartTitle = chartPayload.titles[activeTab]
+  const spec = hideChartTitle(chartPayload.specs[activeTab])
   const specType = typeof spec?.type === 'string' ? spec.type : activeTab
   const chartKey = [
     activeTab,
@@ -210,6 +253,26 @@ export function OverviewChartsPanel(props: OverviewChartsPanelProps) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className='flex shrink-0 flex-col gap-2 border-b px-4 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-5'>
+        <div className='min-w-0'>
+          <div className='truncate text-sm font-medium'>
+            {activeChartTitle.title}
+          </div>
+          {activeChartTitle.subtext ? (
+            <div className='text-muted-foreground truncate text-xs'>
+              {activeChartTitle.subtext}
+            </div>
+          ) : null}
+        </div>
+        <OverviewChartsTimeFilter
+          filters={props.filters}
+          onTimeRangeChange={props.onTimeRangeChange}
+          onGranularityChange={props.onGranularityChange}
+          onReset={props.onResetFilters}
+          className='sm:max-w-[28rem]'
+        />
       </div>
 
       <div className={cn('min-h-0 flex-1 p-2', OVERVIEW_CHART_BODY_HEIGHT)}>

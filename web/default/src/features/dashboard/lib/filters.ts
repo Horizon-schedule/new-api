@@ -22,6 +22,7 @@ import {
   DEFAULT_DASHBOARD_CHART_PREFERENCES,
   DEFAULT_TIME_GRANULARITY,
   EMPTY_DASHBOARD_FILTERS,
+  OVERVIEW_ANALYTICS_FILTERS_STORAGE_KEY,
   TIME_GRANULARITY_STORAGE_KEY,
   TIME_RANGE_PRESETS,
   TIME_RANGE_BY_GRANULARITY,
@@ -144,6 +145,69 @@ export function buildDefaultDashboardFilters(
   preferences: DashboardChartPreferences = getSavedChartPreferences()
 ): DashboardFilters {
   const { start, end } = getRollingDateRange(preferences.defaultTimeRangeDays)
+  return {
+    ...EMPTY_DASHBOARD_FILTERS,
+    start_timestamp: start,
+    end_timestamp: end,
+    time_granularity: preferences.defaultTimeGranularity,
+  }
+}
+
+type SavedOverviewFilters = {
+  start?: string
+  end?: string
+  time_granularity?: TimeGranularity
+}
+
+export function loadOverviewAnalyticsFilters(
+  preferences: DashboardChartPreferences = getSavedChartPreferences()
+): DashboardFilters {
+  const fallback = buildDefaultOverviewFilters(preferences)
+  if (typeof window === 'undefined') return fallback
+
+  try {
+    const raw = localStorage.getItem(OVERVIEW_ANALYTICS_FILTERS_STORAGE_KEY)
+    if (!raw) return fallback
+
+    const parsed = JSON.parse(raw) as SavedOverviewFilters
+    const start = parsed.start ? new Date(parsed.start) : fallback.start_timestamp
+    const end = parsed.end ? new Date(parsed.end) : fallback.end_timestamp
+
+    return {
+      ...fallback,
+      start_timestamp:
+        start && !Number.isNaN(start.getTime()) ? start : fallback.start_timestamp,
+      end_timestamp:
+        end && !Number.isNaN(end.getTime()) ? end : fallback.end_timestamp,
+      time_granularity: isTimeGranularity(parsed.time_granularity)
+        ? parsed.time_granularity
+        : fallback.time_granularity,
+    }
+  } catch {
+    return fallback
+  }
+}
+
+export function saveOverviewAnalyticsFilters(filters: DashboardFilters): void {
+  if (typeof window === 'undefined') return
+
+  const payload: SavedOverviewFilters = {
+    start: filters.start_timestamp?.toISOString(),
+    end: filters.end_timestamp?.toISOString(),
+    time_granularity: filters.time_granularity,
+  }
+
+  localStorage.setItem(
+    OVERVIEW_ANALYTICS_FILTERS_STORAGE_KEY,
+    JSON.stringify(payload)
+  )
+}
+
+export function buildDefaultOverviewFilters(
+  preferences: DashboardChartPreferences = getSavedChartPreferences()
+): DashboardFilters {
+  const days = Math.max(preferences.defaultTimeRangeDays, 7)
+  const { start, end } = getRollingDateRange(days)
   return {
     ...EMPTY_DASHBOARD_FILTERS,
     start_timestamp: start,
