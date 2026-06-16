@@ -246,7 +246,7 @@ function PresetConfig() {
       <Radio
         value={customization.preset}
         onValueChange={(v) => setPreset(v as ThemePreset)}
-        className='grid w-full grid-cols-4 gap-3'
+        className='grid w-full grid-cols-3 gap-3'
         aria-label={t('Select color preset')}
       >
         {THEME_PRESETS.map((preset) => (
@@ -258,7 +258,7 @@ function PresetConfig() {
           >
             <div
               className={cn(
-                'ring-border relative h-12 overflow-hidden rounded-md ring-1 transition',
+                'ring-border relative h-11 overflow-hidden rounded-full ring-1 transition',
                 'group-data-checked:ring-foreground/75 group-data-checked:ring-2 group-data-checked:shadow-md',
                 'group-focus-visible:ring-foreground/75 group-focus-visible:ring-2',
                 'group-hover:ring-foreground/35'
@@ -266,32 +266,14 @@ function PresetConfig() {
             >
               <div
                 aria-hidden='true'
-                className='absolute inset-0 flex rounded-[inherit]'
-              >
-                {preset.value === 'default' ? (
-                  <>
-                    <div className='bg-foreground flex-1' />
-                    <div className='bg-background border-border flex-1 border-l' />
-                  </>
-                ) : (
-                  <>
-                    <div
-                      className='flex-1'
-                      style={{ background: preset.swatches[0] }}
-                    />
-                    <div
-                      className='flex-1 border-l border-white/25'
-                      style={{
-                        background:
-                          preset.swatches[1] ?? preset.swatches[0],
-                      }}
-                    />
-                  </>
-                )}
-              </div>
+                className='absolute inset-0 rounded-[inherit]'
+                style={{
+                  background: preset.color,
+                }}
+              />
               <CircleCheck
                 className={cn(
-                  'fill-foreground text-background absolute top-1 right-1 z-10 size-4 stroke-[2.5]',
+                  'fill-foreground text-background absolute top-1/2 right-1.5 z-10 size-4 -translate-y-1/2 stroke-[2.5]',
                   'group-data-unchecked:hidden'
                 )}
                 aria-hidden='true'
@@ -300,7 +282,7 @@ function PresetConfig() {
             <div
               className={cn(
                 'text-muted-foreground mt-1.5 truncate text-center text-xs transition-colors',
-                'group-data-checked:text-foreground group-data-checked:font-medium'
+                'group-data-checked:text-foreground group-data-checked:font-semibold'
               )}
             >
               {t(`preset.${preset.value}`)}

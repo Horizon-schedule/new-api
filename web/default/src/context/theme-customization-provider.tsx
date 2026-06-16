@@ -29,8 +29,8 @@ import {
   CONTENT_LAYOUT_VALUES,
   type ContentLayout,
   DEFAULT_THEME_CUSTOMIZATION,
+  resolveThemePreset,
   THEME_COOKIE_KEYS,
-  THEME_PRESET_VALUES,
   THEME_RADIUS_VALUES,
   THEME_SCALE_VALUES,
   type ThemeCustomization,
@@ -92,11 +92,7 @@ export function ThemeCustomizationProvider(props: {
   children: React.ReactNode
 }) {
   const [preset, _setPreset] = useState<ThemePreset>(() =>
-    readCookie<ThemePreset>(
-      THEME_COOKIE_KEYS.preset,
-      THEME_PRESET_VALUES,
-      DEFAULT_THEME_CUSTOMIZATION.preset
-    )
+    resolveThemePreset(getCookie(THEME_COOKIE_KEYS.preset))
   )
   const [radius, _setRadius] = useState<ThemeRadius>(() =>
     readCookie<ThemeRadius>(

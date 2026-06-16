@@ -23,87 +23,37 @@ For commercial licensing, please contact support@quantumnous.com
  * provider without breaking React Fast Refresh boundaries.
  */
 
-/** Primary + secondary pair for dual-tone swatch previews (matches theme-presets.css). */
+/** Curated single-tone color presets (matches theme-presets.css). */
 export const THEME_PRESETS = [
   {
     value: 'default',
     name: 'Default',
-    swatches: ['oklch(0.13 0 0)', 'oklch(0.95 0 0)'],
-  },
-  {
-    value: 'underground',
-    name: 'Underground',
-    swatches: ['oklch(0.5315 0.0694 156.19)', 'oklch(0.5748 0.0862 336.52)'],
-  },
-  {
-    value: 'rose-garden',
-    name: 'Rose Garden',
-    swatches: ['oklch(0.5827 0.2418 12.23)', 'oklch(0.8131 0.1129 5.67)'],
-  },
-  {
-    value: 'lake-view',
-    name: 'Lake View',
-    swatches: ['oklch(0.765 0.177 163.22)', 'oklch(0.551 0.0899 200.52)'],
-  },
-  {
-    value: 'sunset-glow',
-    name: 'Sunset Glow',
-    swatches: ['oklch(0.5591 0.1882 25.33)', 'oklch(0.7938 0.1248 42.42)'],
-  },
-  {
-    value: 'forest-whisper',
-    name: 'Forest Whisper',
-    swatches: ['oklch(0.5276 0.1072 182.22)', 'oklch(0.7294 0.0416 244.67)'],
-  },
-  {
-    value: 'ocean-breeze',
-    name: 'Ocean Breeze',
-    swatches: ['oklch(0.5461 0.2152 262.88)', 'oklch(0.785 0.1007 274.72)'],
-  },
-  {
-    value: 'lavender-dream',
-    name: 'Lavender Dream',
-    swatches: ['oklch(0.5709 0.1808 306.89)', 'oklch(0.811 0.0589 201.14)'],
+    color: 'oklch(0.55 0 0)',
   },
   {
     value: 'indigo',
     name: 'Indigo',
-    swatches: ['oklch(0.511 0.262 276.966)', 'oklch(0.809 0.105 251.813)'],
+    color: 'oklch(0.511 0.262 276.966)',
+  },
+  {
+    value: 'ocean-breeze',
+    name: 'Ocean Breeze',
+    color: 'oklch(0.5461 0.2152 262.88)',
   },
   {
     value: 'emerald',
     name: 'Emerald',
-    swatches: ['oklch(0.596 0.145 163.225)', 'oklch(0.845 0.143 164.978)'],
+    color: 'oklch(0.596 0.145 163.225)',
   },
   {
     value: 'amber',
     name: 'Amber',
-    swatches: ['oklch(0.769 0.188 70.08)', 'oklch(0.924 0.12 95.746)'],
+    color: 'oklch(0.769 0.188 70.08)',
   },
   {
     value: 'crimson',
     name: 'Crimson',
-    swatches: ['oklch(0.577 0.245 27.325)', 'oklch(0.885 0.062 18.334)'],
-  },
-  {
-    value: 'midnight',
-    name: 'Midnight',
-    swatches: ['oklch(0.379 0.146 265.522)', 'oklch(0.623 0.214 259.815)'],
-  },
-  {
-    value: 'coral',
-    name: 'Coral',
-    swatches: ['oklch(0.645 0.246 16.439)', 'oklch(0.879 0.169 91.605)'],
-  },
-  {
-    value: 'violet',
-    name: 'Violet',
-    swatches: ['oklch(0.541 0.281 293.009)', 'oklch(0.894 0.057 293.283)'],
-  },
-  {
-    value: 'slate',
-    name: 'Slate',
-    swatches: ['oklch(0.446 0.043 257.281)', 'oklch(0.869 0.022 252.894)'],
+    color: 'oklch(0.577 0.245 27.325)',
   },
 ] as const
 
@@ -129,6 +79,28 @@ export const DEFAULT_THEME_CUSTOMIZATION: ThemeCustomization = {
 export const THEME_PRESET_VALUES = new Set(
   THEME_PRESETS.map((p) => p.value)
 ) as ReadonlySet<ThemePreset>
+
+/** Map retired presets to the closest supported palette. */
+export const LEGACY_THEME_PRESET_ALIASES: Record<string, ThemePreset> = {
+  underground: 'default',
+  'rose-garden': 'crimson',
+  'lake-view': 'emerald',
+  'sunset-glow': 'amber',
+  'forest-whisper': 'emerald',
+  'lavender-dream': 'indigo',
+  midnight: 'indigo',
+  coral: 'crimson',
+  violet: 'indigo',
+  slate: 'default',
+}
+
+export function resolveThemePreset(value: string | undefined): ThemePreset {
+  if (!value) return DEFAULT_THEME_CUSTOMIZATION.preset
+  if (THEME_PRESET_VALUES.has(value as ThemePreset)) {
+    return value as ThemePreset
+  }
+  return LEGACY_THEME_PRESET_ALIASES[value] ?? DEFAULT_THEME_CUSTOMIZATION.preset
+}
 
 export const THEME_RADIUS_VALUES: ReadonlySet<ThemeRadius> = new Set([
   'default',
