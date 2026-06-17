@@ -58,11 +58,6 @@ For commercial licensing, please contact support@quantumnous.com
     cursor: pointer;
   }
 
-  /* Brand / link emphasis — solid high-contrast accent (Google-like) */
-  .text-primary {
-    font-weight: 600;
-  }
-
   /* Prevent focus zoom on mobile devices */
   @media screen and (max-width: 767px) {
     input,
