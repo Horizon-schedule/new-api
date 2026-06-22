@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import z from 'zod'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/auth-store'
+import { getAuthRedirectFromLocation } from '@/lib/auth-redirect'
 import { getFreshModuleAccess } from '@/lib/nav-modules'
 import { ModelDetails } from '@/features/pricing/components/model-details'
 
@@ -47,7 +48,7 @@ export const Route = createFileRoute('/pricing/$modelId/')({
       if (!auth.user) {
         throw redirect({
           to: '/sign-in',
-          search: { redirect: location.href },
+          search: { redirect: getAuthRedirectFromLocation(location) },
         })
       }
     }

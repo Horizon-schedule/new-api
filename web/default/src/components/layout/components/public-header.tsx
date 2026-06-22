@@ -20,6 +20,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/auth-store'
+import { normalizeAuthRedirectPath } from '@/lib/auth-redirect'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/use-notifications'
 import { useStatus } from '@/hooks/use-status'
@@ -124,7 +125,7 @@ export function PublicHeader(props: PublicHeaderProps) {
     }, 1000)
 
     const timeoutId = window.setTimeout(() => {
-      const redirect = authPromptTarget.href
+      const redirect = normalizeAuthRedirectPath(authPromptTarget.href, '/')
       setAuthPromptTarget(null)
       navigate({ to: '/sign-in', search: { redirect } })
     }, AUTH_PROMPT_SECONDS * 1000)
@@ -141,7 +142,7 @@ export function PublicHeader(props: PublicHeaderProps) {
   }, [])
 
   const navigateToSignIn = useCallback(() => {
-    const redirect = authPromptTarget?.href || '/'
+    const redirect = normalizeAuthRedirectPath(authPromptTarget?.href, '/')
     setAuthPromptTarget(null)
     navigate({ to: '/sign-in', search: { redirect } })
   }, [authPromptTarget?.href, navigate])

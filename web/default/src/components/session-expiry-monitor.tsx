@@ -22,6 +22,7 @@ import i18next from 'i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { isSessionExpired, resetSessionVerified } from '@/lib/session'
+import { getAuthRedirectFromWindow } from '@/lib/auth-redirect'
 
 const SESSION_CHECK_INTERVAL_MS = 60_000
 
@@ -37,7 +38,7 @@ export function SessionExpiryMonitor() {
       toast.error(i18next.t('Session expired!'))
       navigate({
         to: '/sign-in',
-        search: { redirect: window.location.pathname },
+        search: { redirect: getAuthRedirectFromWindow() },
         replace: true,
       })
     }

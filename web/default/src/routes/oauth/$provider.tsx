@@ -28,6 +28,11 @@ import i18next from 'i18next'
 import { toast } from 'sonner'
 import { useAuthStore, type AuthUser } from '@/stores/auth-store'
 import { api, getSelf } from '@/lib/api'
+import {
+  DEFAULT_AUTH_REDIRECT,
+  navigateToAuthRedirect,
+  normalizeAuthRedirectPath,
+} from '@/lib/auth-redirect'
 import { OAuthCallbackScreen } from '@/features/auth/components/oauth-callback-screen'
 import { OAUTH_BIND_STORAGE_KEY } from '@/features/auth/constants'
 
@@ -143,8 +148,14 @@ function OAuthCallback() {
       }
 
       const redirectAfterLogin = (target?: string) => {
-        const to = target || search?.redirect || '/dashboard'
-        safeNavigate(to)
+        navigateToAuthRedirect(
+          navigate,
+          normalizeAuthRedirectPath(
+            target || search?.redirect,
+            DEFAULT_AUTH_REDIRECT
+          ),
+          DEFAULT_AUTH_REDIRECT
+        )
         toast.success(i18next.t('Signed in successfully!'))
       }
 
