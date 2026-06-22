@@ -22,12 +22,23 @@ import type { AnnouncementItem, ApiInfoItem, FAQItem } from '../types'
 /**
  * Get specific list from status data
  */
+function resolvePanelEnabled(
+  status: Record<string, unknown> | null,
+  enabledKey: string
+): boolean {
+  if (!status) return false
+  const value = status[enabledKey]
+  if (typeof value === 'boolean') return value
+  // Match backend/console_setting defaults when the flag is absent from cache.
+  return true
+}
+
 export function useStatusData<T = unknown>(
   enabledKey: string,
   dataKey: string
 ): { items: T[]; loading: boolean } {
   const { status, loading } = useStatus()
-  const enabled = status?.[enabledKey] ?? false
+  const enabled = resolvePanelEnabled(status, enabledKey)
   const items = (enabled ? status?.[dataKey] || [] : []) as T[]
 
   return { items, loading }

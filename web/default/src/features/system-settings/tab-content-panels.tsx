@@ -29,7 +29,6 @@ import { getSecuritySectionContent } from './security/section-registry.tsx'
 import {
   defaultAuthSettings,
   defaultBillingSettings,
-  defaultContentSettings,
   defaultModelSettings,
   defaultOperationsSettings,
   defaultSecuritySettings,
@@ -39,6 +38,7 @@ import { getSiteSectionContent } from './site/section-registry.tsx'
 import type { SettingsTabId } from './settings-tabs.config'
 import type { SystemOption } from './types'
 import { normalizeSecuritySettings } from './utils/normalize-security-settings'
+import { resolveContentSettings } from './utils/resolve-content-settings'
 
 type StatusMeta = {
   version?: string | null
@@ -73,7 +73,7 @@ function OperationTab({ options }: TabPanelProps) {
 }
 
 function DashboardTab({ options }: TabPanelProps) {
-  const content = getOptionValue(options, defaultContentSettings)
+  const content = resolveContentSettings(options)
   return (
     <>
       {getContentSectionContent('dashboard', content)}
@@ -86,12 +86,12 @@ function DashboardTab({ options }: TabPanelProps) {
 }
 
 function ChatsTab({ options }: TabPanelProps) {
-  const content = getOptionValue(options, defaultContentSettings)
+  const content = resolveContentSettings(options)
   return getContentSectionContent('chat', content)
 }
 
 function DrawingTab({ options }: TabPanelProps) {
-  const content = getOptionValue(options, defaultContentSettings)
+  const content = resolveContentSettings(options)
   return getContentSectionContent('drawing', content)
 }
 

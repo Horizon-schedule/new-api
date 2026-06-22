@@ -65,6 +65,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
+import { persistConsoleJsonList } from './utils'
 
 type FAQ = {
   id: number
@@ -95,7 +96,6 @@ export function FAQSection({ enabled, data }: FAQSectionProps) {
   const updateOption = useUpdateOption()
   const [faqList, setFaqList] = useState<FAQ[]>([])
   const [isEnabled, setIsEnabled] = useState(enabled)
-  const [hasChanges, setHasChanges] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [showDialog, setShowDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -176,51 +176,64 @@ export function FAQSection({ enabled, data }: FAQSectionProps) {
     setShowDeleteDialog(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
+    let nextList = faqList
     if (deleteTarget === 'single' && editingFaq) {
-      setFaqList((prev) => prev.filter((item) => item.id !== editingFaq.id))
-      setHasChanges(true)
-      toast.success(t('FAQ deleted. Click "Save Settings" to apply.'))
+      nextList = faqList.filter((item) => item.id !== editingFaq.id)
     } else if (deleteTarget === 'batch') {
-      setFaqList((prev) =>
-        prev.filter((item) => !selectedIds.includes(item.id))
-      )
+      nextList = faqList.filter((item) => !selectedIds.includes(item.id))
       setSelectedIds([])
-      setHasChanges(true)
-      toast.success(
-        t('{{count}} FAQs deleted. Click "Save Settings" to apply.', {
-          count: selectedIds.length,
-        })
-      )
+    } else {
+      setShowDeleteDialog(false)
+      setEditingFaq(null)
+      return
     }
+
+    setFaqList(nextList)
     setShowDeleteDialog(false)
     setEditingFaq(null)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.faq',
+        nextList
+      )
+      toast.success(t('FAQ saved successfully'))
+    } catch {
+      toast.error(t('Failed to save FAQ'))
+    }
   }
 
-  const handleSubmitForm = (values: FAQFormValues) => {
+  const handleSubmitForm = async (values: FAQFormValues) => {
+    let nextList: FAQ[]
     if (editingFaq) {
-      setFaqList((prev) =>
-        prev.map((item) =>
-          item.id === editingFaq.id ? { ...item, ...values } : item
-        )
+      nextList = faqList.map((item) =>
+        item.id === editingFaq.id ? { ...item, ...values } : item
       )
-      toast.success(t('FAQ updated. Click "Save Settings" to apply.'))
     } else {
       const newId = Math.max(...faqList.map((item) => item.id), 0) + 1
-      setFaqList((prev) => [...prev, { id: newId, ...values }])
-      toast.success(t('FAQ added. Click "Save Settings" to apply.'))
+      nextList = [...faqList, { id: newId, ...values }]
     }
-    setHasChanges(true)
+
+    setFaqList(nextList)
     setShowDialog(false)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.faq',
+        nextList
+      )
+      toast.success(t('FAQ saved successfully'))
+    } catch {
+      toast.error(t('Failed to save FAQ'))
+    }
   }
 
   const handleSaveAll = async () => {
     try {
-      await updateOption.mutateAsync({
-        key: 'console_setting.faq',
-        value: JSON.stringify(faqList),
-      })
-      setHasChanges(false)
+      await persistConsoleJsonList(updateOption, 'console_setting.faq', faqList)
       toast.success(t('FAQ saved successfully'))
     } catch {
       toast.error(t('Failed to save FAQ'))
@@ -265,7 +278,7 @@ export function FAQSection({ enabled, data }: FAQSectionProps) {
               onClick={handleSaveAll}
               size='sm'
               variant='secondary'
-              disabled={!hasChanges || updateOption.isPending}
+              disabled={updateOption.isPending}
             >
               <Save className='mr-2 h-4 w-4' />
               {updateOption.isPending ? t('Saving...') : t('Save Settings')}

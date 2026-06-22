@@ -73,6 +73,7 @@ import {
 import { StatusBadge } from '@/components/status-badge'
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
+import { persistConsoleJsonList } from './utils'
 
 type ApiInfo = {
   id: number
@@ -111,7 +112,8 @@ const colorOptions = [
   { value: 'teal', label: 'Teal', bgClass: 'bg-teal-500' },
   { value: 'indigo', label: 'Indigo', bgClass: 'bg-indigo-500' },
   { value: 'violet', label: 'Violet', bgClass: 'bg-violet-500' },
-  { value: 'slate', label: 'Slate', bgClass: 'bg-slate-500' },
+  { value: 'grey', label: 'Grey', bgClass: 'bg-gray-500' },
+  { value: 'light-green', label: 'Light Green', bgClass: 'bg-lime-400' },
 ]
 
 export function ApiInfoSection({ enabled, data }: ApiInfoSectionProps) {
@@ -120,7 +122,6 @@ export function ApiInfoSection({ enabled, data }: ApiInfoSectionProps) {
   const apiInfoSchema = createApiInfoSchema(t)
   const [apiInfoList, setApiInfoList] = useState<ApiInfo[]>([])
   const [isEnabled, setIsEnabled] = useState(enabled)
-  const [hasChanges, setHasChanges] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [showDialog, setShowDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -207,53 +208,68 @@ export function ApiInfoSection({ enabled, data }: ApiInfoSectionProps) {
     setShowDeleteDialog(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
+    let nextList = apiInfoList
     if (deleteTarget === 'single' && editingApiInfo) {
-      setApiInfoList((prev) =>
-        prev.filter((item) => item.id !== editingApiInfo.id)
-      )
-      setHasChanges(true)
-      toast.success(t('API info deleted. Click "Save Settings" to apply.'))
+      nextList = apiInfoList.filter((item) => item.id !== editingApiInfo.id)
     } else if (deleteTarget === 'batch') {
-      setApiInfoList((prev) =>
-        prev.filter((item) => !selectedIds.includes(item.id))
-      )
+      nextList = apiInfoList.filter((item) => !selectedIds.includes(item.id))
       setSelectedIds([])
-      setHasChanges(true)
-      toast.success(
-        t('{{count}} API entries deleted. Click "Save Settings" to apply.', {
-          count: selectedIds.length,
-        })
-      )
+    } else {
+      setShowDeleteDialog(false)
+      setEditingApiInfo(null)
+      return
     }
+
+    setApiInfoList(nextList)
     setShowDeleteDialog(false)
     setEditingApiInfo(null)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.api_info',
+        nextList
+      )
+      toast.success(t('API info saved successfully'))
+    } catch {
+      toast.error(t('Failed to save API info'))
+    }
   }
 
-  const handleSubmitForm = (values: ApiInfoFormValues) => {
+  const handleSubmitForm = async (values: ApiInfoFormValues) => {
+    let nextList: ApiInfo[]
     if (editingApiInfo) {
-      setApiInfoList((prev) =>
-        prev.map((item) =>
-          item.id === editingApiInfo.id ? { ...item, ...values } : item
-        )
+      nextList = apiInfoList.map((item) =>
+        item.id === editingApiInfo.id ? { ...item, ...values } : item
       )
-      toast.success(t('API info updated. Click "Save Settings" to apply.'))
     } else {
       const newId = Math.max(...apiInfoList.map((item) => item.id), 0) + 1
-      setApiInfoList((prev) => [...prev, { id: newId, ...values }])
-      toast.success(t('API info added. Click "Save Settings" to apply.'))
+      nextList = [...apiInfoList, { id: newId, ...values }]
     }
-    setHasChanges(true)
+
+    setApiInfoList(nextList)
     setShowDialog(false)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.api_info',
+        nextList
+      )
+      toast.success(t('API info saved successfully'))
+    } catch {
+      toast.error(t('Failed to save API info'))
+    }
   }
 
   const handleSaveAll = async () => {
     try {
-      await updateOption.mutateAsync({
-        key: 'console_setting.api_info',
-        value: JSON.stringify(apiInfoList),
-      })
-      setHasChanges(false)
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.api_info',
+        apiInfoList
+      )
       toast.success(t('API info saved successfully'))
     } catch {
       toast.error(t('Failed to save API info'))
@@ -302,7 +318,7 @@ export function ApiInfoSection({ enabled, data }: ApiInfoSectionProps) {
               onClick={handleSaveAll}
               size='sm'
               variant='secondary'
-              disabled={!hasChanges || updateOption.isPending}
+              disabled={updateOption.isPending}
             >
               <Save className='mr-2 h-4 w-4' />
               {updateOption.isPending ? t('Saving...') : t('Save Settings')}

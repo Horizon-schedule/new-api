@@ -76,6 +76,7 @@ import { DateTimePicker } from '@/components/datetime-picker'
 import { StatusBadge } from '@/components/status-badge'
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
+import { persistConsoleJsonList } from './utils'
 
 type Announcement = {
   id: number
@@ -146,7 +147,6 @@ export function AnnouncementsSection({
   const updateOption = useUpdateOption()
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [isEnabled, setIsEnabled] = useState(enabled)
-  const [hasChanges, setHasChanges] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [showDialog, setShowDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -234,53 +234,70 @@ export function AnnouncementsSection({
     setShowDeleteDialog(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
+    let nextList = announcements
     if (deleteTarget === 'single' && editingAnnouncement) {
-      setAnnouncements((prev) =>
-        prev.filter((item) => item.id !== editingAnnouncement.id)
+      nextList = announcements.filter(
+        (item) => item.id !== editingAnnouncement.id
       )
-      setHasChanges(true)
-      toast.success(t('Announcement deleted. Click "Save Settings" to apply.'))
     } else if (deleteTarget === 'batch') {
-      setAnnouncements((prev) =>
-        prev.filter((item) => !selectedIds.includes(item.id))
-      )
+      nextList = announcements.filter((item) => !selectedIds.includes(item.id))
       setSelectedIds([])
-      setHasChanges(true)
-      toast.success(
-        t('{{count}} announcements deleted. Click "Save Settings" to apply.', {
-          count: selectedIds.length,
-        })
-      )
+    } else {
+      setShowDeleteDialog(false)
+      setEditingAnnouncement(null)
+      return
     }
+
+    setAnnouncements(nextList)
     setShowDeleteDialog(false)
     setEditingAnnouncement(null)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.announcements',
+        nextList
+      )
+      toast.success(t('Announcements saved successfully'))
+    } catch {
+      toast.error(t('Failed to save announcements'))
+    }
   }
 
-  const handleSubmitForm = (values: AnnouncementFormValues) => {
+  const handleSubmitForm = async (values: AnnouncementFormValues) => {
+    let nextList: Announcement[]
     if (editingAnnouncement) {
-      setAnnouncements((prev) =>
-        prev.map((item) =>
-          item.id === editingAnnouncement.id ? { ...item, ...values } : item
-        )
+      nextList = announcements.map((item) =>
+        item.id === editingAnnouncement.id ? { ...item, ...values } : item
       )
-      toast.success(t('Announcement updated. Click "Save Settings" to apply.'))
     } else {
       const newId = Math.max(...announcements.map((item) => item.id), 0) + 1
-      setAnnouncements((prev) => [...prev, { id: newId, ...values }])
-      toast.success(t('Announcement added. Click "Save Settings" to apply.'))
+      nextList = [...announcements, { id: newId, ...values }]
     }
-    setHasChanges(true)
+
+    setAnnouncements(nextList)
     setShowDialog(false)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.announcements',
+        nextList
+      )
+      toast.success(t('Announcements saved successfully'))
+    } catch {
+      toast.error(t('Failed to save announcements'))
+    }
   }
 
   const handleSaveAll = async () => {
     try {
-      await updateOption.mutateAsync({
-        key: 'console_setting.announcements',
-        value: JSON.stringify(announcements),
-      })
-      setHasChanges(false)
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.announcements',
+        announcements
+      )
       toast.success(t('Announcements saved successfully'))
     } catch {
       toast.error(t('Failed to save announcements'))
@@ -344,7 +361,7 @@ export function AnnouncementsSection({
               onClick={handleSaveAll}
               size='sm'
               variant='secondary'
-              disabled={!hasChanges || updateOption.isPending}
+              disabled={updateOption.isPending}
             >
               <Save className='mr-2 h-4 w-4' />
               {updateOption.isPending ? t('Saving...') : t('Save Settings')}

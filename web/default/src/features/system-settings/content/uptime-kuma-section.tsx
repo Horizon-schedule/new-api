@@ -64,6 +64,7 @@ import {
 } from '@/components/ui/table'
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
+import { persistConsoleJsonList } from './utils'
 
 type UptimeKumaGroup = {
   id: number
@@ -103,7 +104,6 @@ export function UptimeKumaSection({ enabled, data }: UptimeKumaSectionProps) {
   const uptimeKumaSchema = createUptimeKumaSchema(t)
   const [groups, setGroups] = useState<UptimeKumaGroup[]>([])
   const [isEnabled, setIsEnabled] = useState(enabled)
-  const [hasChanges, setHasChanges] = useState(false)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [showDialog, setShowDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -187,49 +187,68 @@ export function UptimeKumaSection({ enabled, data }: UptimeKumaSectionProps) {
     setShowDeleteDialog(true)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
+    let nextList = groups
     if (deleteTarget === 'single' && editingGroup) {
-      setGroups((prev) => prev.filter((item) => item.id !== editingGroup.id))
-      setHasChanges(true)
-      toast.success(t('Group deleted. Click "Save Settings" to apply.'))
+      nextList = groups.filter((item) => item.id !== editingGroup.id)
     } else if (deleteTarget === 'batch') {
-      setGroups((prev) => prev.filter((item) => !selectedIds.includes(item.id)))
+      nextList = groups.filter((item) => !selectedIds.includes(item.id))
       setSelectedIds([])
-      setHasChanges(true)
-      toast.success(
-        t('{{count}} groups deleted. Click "Save Settings" to apply.', {
-          count: selectedIds.length,
-        })
-      )
+    } else {
+      setShowDeleteDialog(false)
+      setEditingGroup(null)
+      return
     }
+
+    setGroups(nextList)
     setShowDeleteDialog(false)
     setEditingGroup(null)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.uptime_kuma_groups',
+        nextList
+      )
+      toast.success(t('Uptime Kuma groups saved successfully'))
+    } catch {
+      toast.error(t('Failed to save Uptime Kuma groups'))
+    }
   }
 
-  const handleSubmitForm = (values: UptimeKumaFormValues) => {
+  const handleSubmitForm = async (values: UptimeKumaFormValues) => {
+    let nextList: UptimeKumaGroup[]
     if (editingGroup) {
-      setGroups((prev) =>
-        prev.map((item) =>
-          item.id === editingGroup.id ? { ...item, ...values } : item
-        )
+      nextList = groups.map((item) =>
+        item.id === editingGroup.id ? { ...item, ...values } : item
       )
-      toast.success(t('Group updated. Click "Save Settings" to apply.'))
     } else {
       const newId = Math.max(...groups.map((item) => item.id), 0) + 1
-      setGroups((prev) => [...prev, { id: newId, ...values }])
-      toast.success(t('Group added. Click "Save Settings" to apply.'))
+      nextList = [...groups, { id: newId, ...values }]
     }
-    setHasChanges(true)
+
+    setGroups(nextList)
     setShowDialog(false)
+
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.uptime_kuma_groups',
+        nextList
+      )
+      toast.success(t('Uptime Kuma groups saved successfully'))
+    } catch {
+      toast.error(t('Failed to save Uptime Kuma groups'))
+    }
   }
 
   const handleSaveAll = async () => {
     try {
-      await updateOption.mutateAsync({
-        key: 'console_setting.uptime_kuma_groups',
-        value: JSON.stringify(groups),
-      })
-      setHasChanges(false)
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.uptime_kuma_groups',
+        groups
+      )
       toast.success(t('Uptime Kuma groups saved successfully'))
     } catch {
       toast.error(t('Failed to save Uptime Kuma groups'))
@@ -274,7 +293,7 @@ export function UptimeKumaSection({ enabled, data }: UptimeKumaSectionProps) {
               onClick={handleSaveAll}
               size='sm'
               variant='secondary'
-              disabled={!hasChanges || updateOption.isPending}
+              disabled={updateOption.isPending}
             >
               <Save className='mr-2 h-4 w-4' />
               {updateOption.isPending ? t('Saving...') : t('Save Settings')}

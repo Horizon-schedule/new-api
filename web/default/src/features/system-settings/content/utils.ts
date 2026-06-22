@@ -35,3 +35,21 @@ export function normalizeJsonString(value: string, fallback = '[]') {
     return target.trim()
   }
 }
+
+type UpdateOptionClient = {
+  mutateAsync: (request: {
+    key: string
+    value: string | number | boolean
+  }) => Promise<unknown>
+}
+
+export async function persistConsoleJsonList<T>(
+  updateOption: UpdateOptionClient,
+  optionKey: string,
+  list: T[]
+) {
+  await updateOption.mutateAsync({
+    key: optionKey,
+    value: JSON.stringify(list),
+  })
+}

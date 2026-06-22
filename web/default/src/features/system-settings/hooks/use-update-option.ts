@@ -38,6 +38,12 @@ const STATUS_RELATED_KEYS = [
   'general_setting.custom_currency_exchange_rate',
 ]
 
+function shouldRefreshStatus(key: string): boolean {
+  return (
+    STATUS_RELATED_KEYS.includes(key) || key.startsWith('console_setting.')
+  )
+}
+
 export function useUpdateOption() {
   const queryClient = useQueryClient()
 
@@ -49,7 +55,7 @@ export function useUpdateOption() {
         queryClient.invalidateQueries({ queryKey: ['system-options'] })
 
         // If updating frontend-display-related config, also refresh status
-        if (STATUS_RELATED_KEYS.includes(variables.key)) {
+        if (shouldRefreshStatus(variables.key)) {
           queryClient.invalidateQueries({ queryKey: ['status'] })
         }
 
