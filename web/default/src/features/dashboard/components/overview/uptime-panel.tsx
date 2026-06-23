@@ -105,7 +105,6 @@ export function UptimePanel() {
       empty={!groups.length}
       emptyMessage={t('No uptime monitoring configured')}
       scrollHeight={OVERVIEW_INFO_SCROLL_HEIGHT}
-      fill
       contentClassName='p-0'
       headerActions={
         <Button

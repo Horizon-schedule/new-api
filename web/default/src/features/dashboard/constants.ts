@@ -32,11 +32,8 @@ export const OVERVIEW_CHART_BODY_HEIGHT = 'h-96'
 /** Scroll list height beside chart (classic ApiInfo `maxHeight: 24rem`) */
 export const OVERVIEW_API_SCROLL_HEIGHT = 'h-96'
 
-/** Equal scroll body for announcements / FAQ / uptime row */
-export const OVERVIEW_INFO_SCROLL_HEIGHT = 'h-80'
-
-/** Minimum card height for the three-column info row */
-export const OVERVIEW_INFO_PANEL_MIN_HEIGHT = 'min-h-[22rem]'
+/** Fixed scroll body for announcements / FAQ / uptime row (vertical scroll inside) */
+export const OVERVIEW_INFO_SCROLL_HEIGHT = 'h-52 max-h-52'
 
 export const DEFAULT_DASHBOARD_CHART_PREFERENCES: DashboardChartPreferences = {
   consumptionDistributionChart: 'bar',

@@ -48,7 +48,6 @@ export function FAQPanel() {
       empty={!list.length}
       emptyMessage={t('No FAQ entries available')}
       scrollHeight={OVERVIEW_INFO_SCROLL_HEIGHT}
-      fill
       contentClassName='p-0'
     >
       <Accordion className='w-full px-4 sm:px-5'>

@@ -68,7 +68,6 @@ export function AnnouncementsPanel() {
       empty={!list.length}
       emptyMessage={t('No announcements at this time')}
       scrollHeight={OVERVIEW_INFO_SCROLL_HEIGHT}
-      fill
       contentClassName='p-0'
     >
       {list.map((item: AnnouncementItem, idx: number) => {

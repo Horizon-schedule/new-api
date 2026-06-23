@@ -23,10 +23,7 @@ import {
   CardStaggerContainer,
   CardStaggerItem,
 } from '@/components/page-transition'
-import {
-  DEFAULT_TIME_GRANULARITY,
-  OVERVIEW_INFO_PANEL_MIN_HEIGHT,
-} from '@/features/dashboard/constants'
+import { DEFAULT_TIME_GRANULARITY } from '@/features/dashboard/constants'
 import { processOverviewStats } from '@/features/dashboard/lib/overview-trends'
 import { useOverviewStats } from '@/features/dashboard/hooks/use-overview-stats'
 import { AnnouncementsPanel } from './announcements-panel'
@@ -114,9 +111,7 @@ export function UsageOverviewSection() {
       </CardStaggerContainer>
 
       {(announcementsEnabled || faqEnabled || uptimeEnabled) && (
-        <CardStaggerContainer
-          className={`grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3 ${OVERVIEW_INFO_PANEL_MIN_HEIGHT}`}
-        >
+        <CardStaggerContainer className='grid grid-cols-1 items-start gap-4 lg:grid-cols-3'>
           {announcementsEnabled && (
             <CardStaggerItem className='flex'>
               <AnnouncementsPanel />

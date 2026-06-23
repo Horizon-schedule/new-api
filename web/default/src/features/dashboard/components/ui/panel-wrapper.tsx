@@ -74,10 +74,14 @@ export function PanelWrapper(props: PanelWrapperProps) {
   const scrollHeight = props.scrollHeight ?? props.height ?? 'h-64'
   const frameClassName = cn(
     'overflow-hidden rounded-2xl border bg-card shadow-xs',
-    props.fill && 'flex h-full flex-col',
+    props.fill && 'flex h-full min-h-0 flex-col',
     props.className
   )
-  const bodyClassName = cn(scrollHeight, props.fill && 'min-h-0 flex-1')
+  const bodyClassName = cn(
+    scrollHeight,
+    'overflow-hidden',
+    props.fill ? 'min-h-0 flex-1' : 'shrink-0'
+  )
 
   if (props.loading) {
     return (
