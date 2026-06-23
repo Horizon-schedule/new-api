@@ -59,7 +59,9 @@ export function useUpdateOption() {
           queryClient.invalidateQueries({ queryKey: ['status'] })
         }
 
-        toast.success(i18next.t('Setting updated successfully'))
+        if (!variables.key.startsWith('console_setting.')) {
+          toast.success(i18next.t('Setting updated successfully'))
+        }
       } else {
         toast.error(data.message || i18next.t('Failed to update setting'))
       }

@@ -76,7 +76,7 @@ import { DateTimePicker } from '@/components/datetime-picker'
 import { StatusBadge } from '@/components/status-badge'
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
-import { persistConsoleJsonList } from './utils'
+import { persistConsoleJsonList, normalizeAnnouncementList, parseAnnouncementList, shouldSyncConsoleListFromServer } from './utils'
 
 type Announcement = {
   id: number
@@ -100,7 +100,7 @@ const announcementSchema = z.object({
   type: z.enum(['default', 'ongoing', 'success', 'warning', 'error']),
   extra: z
     .string()
-    .max(100, 'Extra must be less than 100 characters')
+    .max(200, 'Extra must be less than 200 characters')
     .optional(),
 })
 
@@ -165,20 +165,28 @@ export function AnnouncementsSection({
   })
 
   useEffect(() => {
-    try {
-      const parsed = JSON.parse(data || '[]')
-      if (Array.isArray(parsed)) {
-        setAnnouncements(
-          parsed.map((item, idx) => ({
-            ...item,
-            id: item.id || idx + 1,
-          }))
-        )
-      }
-    } catch {
-      setAnnouncements([])
+    const parsed = parseAnnouncementList(data)
+    if (
+      !shouldSyncConsoleListFromServer(
+        parsed,
+        announcements,
+        updateOption.isPending
+      )
+    ) {
+      return
     }
-  }, [data])
+    setAnnouncements(parsed)
+  }, [data, announcements, updateOption.isPending])
+
+  const persistAnnouncements = async (nextList: Announcement[]) => {
+    const normalized = normalizeAnnouncementList(nextList)
+    await persistConsoleJsonList(
+      updateOption,
+      'console_setting.announcements',
+      normalized
+    )
+    setAnnouncements(normalized)
+  }
 
   useEffect(() => {
     setIsEnabled(enabled)
@@ -249,19 +257,18 @@ export function AnnouncementsSection({
       return
     }
 
-    setAnnouncements(nextList)
     setShowDeleteDialog(false)
     setEditingAnnouncement(null)
 
     try {
-      await persistConsoleJsonList(
-        updateOption,
-        'console_setting.announcements',
-        nextList
-      )
+      await persistAnnouncements(nextList)
       toast.success(t('Announcements saved successfully'))
-    } catch {
-      toast.error(t('Failed to save announcements'))
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('Failed to save announcements')
+      )
     }
   }
 
@@ -276,31 +283,30 @@ export function AnnouncementsSection({
       nextList = [...announcements, { id: newId, ...values }]
     }
 
-    setAnnouncements(nextList)
     setShowDialog(false)
 
     try {
-      await persistConsoleJsonList(
-        updateOption,
-        'console_setting.announcements',
-        nextList
-      )
+      await persistAnnouncements(nextList)
       toast.success(t('Announcements saved successfully'))
-    } catch {
-      toast.error(t('Failed to save announcements'))
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('Failed to save announcements')
+      )
     }
   }
 
   const handleSaveAll = async () => {
     try {
-      await persistConsoleJsonList(
-        updateOption,
-        'console_setting.announcements',
-        announcements
-      )
+      await persistAnnouncements(announcements)
       toast.success(t('Announcements saved successfully'))
-    } catch {
-      toast.error(t('Failed to save announcements'))
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t('Failed to save announcements')
+      )
     }
   }
 
@@ -376,8 +382,9 @@ export function AnnouncementsSection({
         </div>
 
         <div className='rounded-md border'>
+          <div className='max-h-80 overflow-y-auto'>
           <Table>
-            <TableHeader>
+            <TableHeader className='bg-card sticky top-0 z-10'>
               <TableRow>
                 <TableHead className='w-12'>
                   <Checkbox
@@ -477,6 +484,7 @@ export function AnnouncementsSection({
               )}
             </TableBody>
           </Table>
+          </div>
         </div>
       </div>
 
@@ -606,7 +614,7 @@ export function AnnouncementsSection({
                     </FormControl>
                     <FormDescription>
                       {t(
-                        'Optional supplementary information (max 100 characters)'
+                        'Optional supplementary information (max 200 characters)'
                       )}
                     </FormDescription>
                     <FormMessage />

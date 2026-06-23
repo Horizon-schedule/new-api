@@ -34,6 +34,13 @@ For commercial licensing, please contact support@quantumnous.com
   }
 }
 
+@layer utilities {
+  /* Site-wide: muted/secondary text uses full foreground contrast */
+  [class*='text-muted-foreground'] {
+    color: var(--foreground);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -596,7 +596,7 @@ For commercial licensing, please contact support@quantumnous.com
   --card: color-mix(in oklch, var(--primary) 3%, var(--background));
   --popover: color-mix(in oklch, var(--primary) 5%, var(--background));
   --muted: color-mix(in oklch, var(--primary) 7%, var(--background));
-  --muted-foreground: color-mix(in oklch, var(--foreground) 52%, var(--background));
+  --muted-foreground: var(--foreground);
   --accent: color-mix(in oklch, var(--primary) 14%, var(--background));
   --accent-foreground: var(--foreground);
   --border: color-mix(in oklch, var(--primary) 20%, var(--background));
@@ -614,7 +614,7 @@ For commercial licensing, please contact support@quantumnous.com
   --card: color-mix(in oklch, var(--primary) 8%, var(--background));
   --popover: color-mix(in oklch, var(--primary) 12%, var(--background));
   --muted: color-mix(in oklch, var(--primary) 12%, var(--background));
-  --muted-foreground: color-mix(in oklch, var(--foreground) 58%, var(--background));
+  --muted-foreground: var(--foreground);
   --accent: color-mix(in oklch, var(--primary) 18%, var(--background));
   --border: color-mix(in oklch, var(--primary) 24%, var(--background));
   --input: color-mix(in oklch, var(--primary) 28%, var(--background));
