@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as z from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -164,28 +164,40 @@ export function AnnouncementsSection({
     },
   })
 
+  const announcementsRef = useRef(announcements)
+  announcementsRef.current = announcements
+
   useEffect(() => {
     const parsed = parseAnnouncementList(data)
     if (
       !shouldSyncConsoleListFromServer(
         parsed,
-        announcements,
+        announcementsRef.current,
         updateOption.isPending
       )
     ) {
       return
     }
-    setAnnouncements(parsed)
-  }, [data, announcements, updateOption.isPending])
+    setAnnouncements(parsed as Announcement[])
+  }, [data, updateOption.isPending])
+
+  const reloadAnnouncementsFromServer = () => {
+    setAnnouncements(parseAnnouncementList(data) as Announcement[])
+  }
 
   const persistAnnouncements = async (nextList: Announcement[]) => {
     const normalized = normalizeAnnouncementList(nextList)
-    await persistConsoleJsonList(
-      updateOption,
-      'console_setting.announcements',
-      normalized
-    )
     setAnnouncements(normalized)
+    try {
+      await persistConsoleJsonList(
+        updateOption,
+        'console_setting.announcements',
+        normalized
+      )
+    } catch (error) {
+      reloadAnnouncementsFromServer()
+      throw error
+    }
   }
 
   useEffect(() => {

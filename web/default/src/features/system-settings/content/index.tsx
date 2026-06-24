@@ -16,9 +16,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
+import { migrateConsoleSetting } from '../api'
 import { useSystemOptions } from '../hooks/use-system-options'
 import { resolveContentSettings } from '../utils/resolve-content-settings'
 import {
@@ -26,9 +28,52 @@ import {
   getContentSectionContent,
 } from './section-registry.tsx'
 
+const LEGACY_CONSOLE_KEYS = [
+  'ApiInfo',
+  'Announcements',
+  'FAQ',
+  'UptimeKumaUrl',
+  'UptimeKumaSlug',
+] as const
+
+function useLegacyConsoleSettingMigration(
+  options: ReturnType<typeof useSystemOptions>['data']
+) {
+  const queryClient = useQueryClient()
+  const migratedRef = useRef(false)
+
+  useEffect(() => {
+    if (migratedRef.current || !options?.success || !options.data) return
+
+    const optionMap = new Map(options.data.map((item) => [item.key, item.value]))
+    const hasLegacy = LEGACY_CONSOLE_KEYS.some((key) => {
+      const value = optionMap.get(key)
+      return typeof value === 'string' && value.trim() !== ''
+    })
+    if (!hasLegacy) return
+
+    migratedRef.current = true
+    void migrateConsoleSetting()
+      .then(async (result) => {
+        if (!result.success) {
+          migratedRef.current = false
+          return
+        }
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['system-options'] }),
+          queryClient.refetchQueries({ queryKey: ['status'] }),
+        ])
+      })
+      .catch(() => {
+        migratedRef.current = false
+      })
+  }, [options, queryClient])
+}
+
 export function ContentSettings() {
   const { t } = useTranslation()
   const { data, isLoading } = useSystemOptions()
+  useLegacyConsoleSettingMigration(data)
   const params = useParams({
     from: '/_authenticated/system-settings/content/$section',
   })

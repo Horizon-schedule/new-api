@@ -43,6 +43,13 @@ export async function updateSystemOption(request: UpdateOptionRequest) {
   return res.data
 }
 
+export async function migrateConsoleSetting() {
+  const res = await api.post<UpdateOptionResponse>(
+    '/api/option/migrate_console_setting'
+  )
+  return res.data
+}
+
 export async function confirmPaymentCompliance() {
   const res = await api.post<ConfirmPaymentComplianceResponse>(
     '/api/option/payment_compliance',

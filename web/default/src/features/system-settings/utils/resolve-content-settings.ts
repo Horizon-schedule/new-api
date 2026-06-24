@@ -16,9 +16,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { isEmptyJsonList } from '../content/utils'
 import { getOptionValue } from '../hooks/use-system-options'
 import { defaultContentSettings } from '../settings-defaults'
 import type { ContentSettings, SystemOption } from '../types'
+
+function applyLegacyJsonListFallback(
+  resolved: ContentSettings,
+  optionMap: Map<string, string>,
+  newKey: keyof ContentSettings,
+  legacyKey: string
+) {
+  const current = resolved[newKey]
+  if (typeof current !== 'string' || !isEmptyJsonList(current)) {
+    return
+  }
+  const legacy = optionMap.get(legacyKey)
+  if (legacy && !isEmptyJsonList(legacy)) {
+    resolved[newKey] = legacy as ContentSettings[typeof newKey]
+  }
+}
 
 /**
  * Resolve dashboard/content settings from API options, including legacy key fallbacks.
@@ -37,6 +54,13 @@ export function resolveContentSettings(
     if (legacy !== undefined) {
       resolved['console_setting.announcements'] = legacy
     }
+  } else {
+    applyLegacyJsonListFallback(
+      resolved,
+      optionMap,
+      'console_setting.announcements',
+      'Announcements'
+    )
   }
 
   if (!optionMap.has('console_setting.api_info')) {
@@ -44,6 +68,13 @@ export function resolveContentSettings(
     if (legacy !== undefined) {
       resolved['console_setting.api_info'] = legacy
     }
+  } else {
+    applyLegacyJsonListFallback(
+      resolved,
+      optionMap,
+      'console_setting.api_info',
+      'ApiInfo'
+    )
   }
 
   if (!optionMap.has('console_setting.faq')) {
@@ -51,6 +82,13 @@ export function resolveContentSettings(
     if (legacy !== undefined) {
       resolved['console_setting.faq'] = legacy
     }
+  } else {
+    applyLegacyJsonListFallback(
+      resolved,
+      optionMap,
+      'console_setting.faq',
+      'FAQ'
+    )
   }
 
   if (!optionMap.has('console_setting.uptime_kuma_groups')) {

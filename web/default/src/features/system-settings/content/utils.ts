@@ -101,6 +101,16 @@ export function normalizeAnnouncementList(
   })
 }
 
+export function isEmptyJsonList(value: string | undefined): boolean {
+  if (!value?.trim()) return true
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) && parsed.length === 0
+  } catch {
+    return true
+  }
+}
+
 export function parseAnnouncementList(data: string): AnnouncementRecord[] {
   try {
     const parsed = JSON.parse(data || '[]')

@@ -21,6 +21,7 @@ import i18next from 'i18next'
 import { toast } from 'sonner'
 import { updateSystemOption } from '../api'
 import type { UpdateOptionRequest } from '../types'
+import { patchStatusCacheForConsoleSetting } from './sync-status-cache'
 
 // Configuration keys that require status refresh
 const STATUS_RELATED_KEYS = [
@@ -54,9 +55,16 @@ export function useUpdateOption() {
         // Always refresh system-options
         queryClient.invalidateQueries({ queryKey: ['system-options'] })
 
-        // If updating frontend-display-related config, also refresh status
+        // Keep overview panels in sync immediately, then refresh from server.
+        if (variables.key.startsWith('console_setting.')) {
+          patchStatusCacheForConsoleSetting(
+            queryClient,
+            variables.key,
+            variables.value
+          )
+        }
         if (shouldRefreshStatus(variables.key)) {
-          queryClient.invalidateQueries({ queryKey: ['status'] })
+          void queryClient.refetchQueries({ queryKey: ['status'] })
         }
 
         if (!variables.key.startsWith('console_setting.')) {
