@@ -88,7 +88,7 @@ export interface PrefillGroup {
 export interface GetModelsParams {
   p?: number
   page_size?: number
-  vendor?: string // vendor ID to filter by
+  vendor?: string | string[] // vendor ID(s) to filter by
   status?: string // filter by status
   sync_official?: string // filter by sync_official status
 }
@@ -98,7 +98,7 @@ export interface GetModelsParams {
  */
 export interface SearchModelsParams {
   keyword?: string
-  vendor?: string // vendor ID to filter by
+  vendor?: string | string[] // vendor ID(s) to filter by
   status?: string // filter by status
   sync_official?: string // filter by sync_official status
   p?: number

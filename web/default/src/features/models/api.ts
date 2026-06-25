@@ -59,10 +59,28 @@ export async function getModels(
 /**
  * Search models with filters
  */
+function normalizeVendorParam(
+  vendor?: string | string[]
+): string | undefined {
+  if (vendor == null) return undefined
+  if (Array.isArray(vendor)) {
+    const ids = vendor.filter((id) => id && id !== 'all')
+    return ids.length > 0 ? ids.join(',') : undefined
+  }
+  return vendor === 'all' ? undefined : vendor
+}
+
 export async function searchModels(
   params: SearchModelsParams
 ): Promise<GetModelsResponse> {
-  const res = await api.get('/api/models/search', { params })
+  const { vendor, ...rest } = params
+  const normalizedVendor = normalizeVendorParam(vendor)
+  const res = await api.get('/api/models/search', {
+    params: {
+      ...rest,
+      ...(normalizedVendor ? { vendor: normalizedVendor } : {}),
+    },
+  })
   return res.data
 }
 

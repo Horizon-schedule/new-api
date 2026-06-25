@@ -51,14 +51,31 @@ func GetAllModelsMeta(c *gin.Context) {
 	})
 }
 
+func parseModelVendorFilters(c *gin.Context) []string {
+	vendors := c.QueryArray("vendor")
+	if len(vendors) == 0 {
+		if vendor := strings.TrimSpace(c.Query("vendor")); vendor != "" {
+			vendors = strings.Split(vendor, ",")
+		}
+	}
+	result := make([]string, 0, len(vendors))
+	for _, vendor := range vendors {
+		vendor = strings.TrimSpace(vendor)
+		if vendor != "" {
+			result = append(result, vendor)
+		}
+	}
+	return result
+}
+
 // SearchModelsMeta 搜索模型列表
 func SearchModelsMeta(c *gin.Context) {
 
 	keyword := c.Query("keyword")
-	vendor := c.Query("vendor")
+	vendors := parseModelVendorFilters(c)
 	pageInfo := common.GetPageQuery(c)
 
-	modelsMeta, total, err := model.SearchModels(keyword, vendor, pageInfo.GetStartIdx(), pageInfo.GetPageSize())
+	modelsMeta, total, err := model.SearchModels(keyword, vendors, pageInfo.GetStartIdx(), pageInfo.GetPageSize())
 	if err != nil {
 		common.ApiError(c, err)
 		return

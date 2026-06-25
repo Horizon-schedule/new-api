@@ -2,6 +2,7 @@ package model
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/QuantumNous/new-api/common"
 
@@ -148,18 +149,32 @@ func GetBoundChannelsByModelsMap(modelNames []string) (map[string][]BoundChannel
 	return result, nil
 }
 
-func SearchModels(keyword string, vendor string, offset int, limit int) ([]*Model, int64, error) {
+func SearchModels(keyword string, vendors []string, offset int, limit int) ([]*Model, int64, error) {
 	var models []*Model
 	db := DB.Model(&Model{})
 	if keyword != "" {
 		like := "%" + keyword + "%"
 		db = db.Where("model_name LIKE ? OR description LIKE ? OR tags LIKE ?", like, like, like)
 	}
-	if vendor != "" {
-		if vid, err := strconv.Atoi(vendor); err == nil {
-			db = db.Where("models.vendor_id = ?", vid)
-		} else {
-			db = db.Joins("JOIN vendors ON vendors.id = models.vendor_id").Where("vendors.name LIKE ?", "%"+vendor+"%")
+	if len(vendors) > 0 {
+		var vendorIDs []int
+		var nameQueries []string
+		for _, vendor := range vendors {
+			vendor = strings.TrimSpace(vendor)
+			if vendor == "" || vendor == "all" {
+				continue
+			}
+			if vid, err := strconv.Atoi(vendor); err == nil {
+				vendorIDs = append(vendorIDs, vid)
+			} else {
+				nameQueries = append(nameQueries, vendor)
+			}
+		}
+		switch {
+		case len(vendorIDs) > 0:
+			db = db.Where("models.vendor_id IN ?", vendorIDs)
+		case len(nameQueries) == 1:
+			db = db.Joins("JOIN vendors ON vendors.id = models.vendor_id").Where("vendors.name LIKE ?", "%"+nameQueries[0]+"%")
 		}
 	}
 	var total int64

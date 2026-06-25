@@ -48,7 +48,7 @@ type ModelsTableProps = {
 
 export function ModelsTable({ onVendorCountsChange }: ModelsTableProps) {
   const { t } = useTranslation()
-  const { selectedVendor, setSelectedVendor } = useModels()
+  const { selectedVendor } = useModels()
   const navigate = route.useNavigate()
   const isMobile = useMediaQuery('(max-width: 640px)')
 
@@ -115,19 +115,26 @@ export function ModelsTable({ onVendorCountsChange }: ModelsTableProps) {
   // Determine whether to use search or regular list API
   const shouldSearch = Boolean(globalFilter?.trim())
 
-  // Apply selected vendor from context or filter
-  const activeVendorFilter =
-    selectedVendor ||
-    (vendorFilter.length > 0 && !vendorFilter.includes('all')
-      ? vendorFilter[0]
-      : undefined)
+  // Apply selected vendor(s) from context or URL filter
+  const activeVendorFilters = useMemo(() => {
+    const fromUrl = vendorFilter.filter((value) => value !== 'all')
+    if (fromUrl.length > 0) {
+      return fromUrl
+    }
+    if (selectedVendor && selectedVendor !== 'all') {
+      return [selectedVendor]
+    }
+    return []
+  }, [vendorFilter, selectedVendor])
+
+  const hasVendorFilter = activeVendorFilters.length > 0
 
   // Fetch models data
   // eslint-disable-next-line @tanstack/query/exhaustive-deps
   const { data, isLoading, isFetching } = useQuery({
     queryKey: modelsQueryKeys.list({
       keyword: globalFilter,
-      vendor: activeVendorFilter,
+      vendor: hasVendorFilter ? activeVendorFilters : undefined,
       status:
         statusFilter.length > 0 && !statusFilter.includes('all')
           ? statusFilter[0]
@@ -140,10 +147,10 @@ export function ModelsTable({ onVendorCountsChange }: ModelsTableProps) {
       page_size: pagination.pageSize,
     }),
     queryFn: async () => {
-      if (shouldSearch || activeVendorFilter) {
+      if (shouldSearch || hasVendorFilter) {
         return searchModels({
           keyword: globalFilter,
-          vendor: activeVendorFilter,
+          vendor: hasVendorFilter ? activeVendorFilters : undefined,
           status:
             statusFilter.length > 0 && !statusFilter.includes('all')
               ? statusFilter[0]
@@ -256,7 +263,7 @@ export function ModelsTable({ onVendorCountsChange }: ModelsTableProps) {
             columnId: 'vendor_id',
             title: t('Vendor'),
             options: vendorFilterOptions,
-            singleSelect: true,
+            resetValues: ['all'],
           },
           {
             columnId: 'sync_official',

@@ -51,6 +51,8 @@ type DataTableFacetedFilterProps<TData, TValue> = {
   }[]
   /** Enable single select mode (only one option can be selected at a time) */
   singleSelect?: boolean
+  /** In multi-select mode, selecting these values clears the filter */
+  resetValues?: string[]
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
@@ -58,6 +60,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   title,
   options,
   singleSelect = false,
+  resetValues = [],
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const { t } = useTranslation()
   const facets = column?.getFacetedUniqueValues()
@@ -130,6 +133,10 @@ export function DataTableFacetedFilter<TData, TValue>({
                         }
                       } else {
                         // Multi-select mode: original behavior
+                        if (resetValues.includes(option.value)) {
+                          column?.setFilterValue(undefined)
+                          return
+                        }
                         if (isSelected) {
                           selectedValues.delete(option.value)
                         } else {
