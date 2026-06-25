@@ -108,3 +108,22 @@ export const SETTINGS_TAB_IDS = SETTINGS_TABS.map((tab) => tab.id) as [
 ]
 
 export const SETTINGS_DEFAULT_TAB: SettingsTabId = 'operation'
+
+/** Build a path to a top-level system settings tab (default theme routes). */
+export function getSettingsTabPath(tab: SettingsTabId): string {
+  return `/system-settings/${tab}`
+}
+
+function isSettingsTabId(value: string): value is SettingsTabId {
+  return (SETTINGS_TAB_IDS as readonly string[]).includes(value)
+}
+
+/** Resolve classic `/console/setting?tab=…` query values to a settings tab id. */
+export function resolveLegacySettingsTabQuery(
+  tab: string | undefined
+): SettingsTabId {
+  if (tab && isSettingsTabId(tab)) {
+    return tab
+  }
+  return SETTINGS_DEFAULT_TAB
+}

@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { AlertCircle, AlertTriangle, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { getSettingsTabPath } from '@/features/system-settings/settings-tabs.config'
 import { useAuthStore } from '@/stores/auth-store'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -56,9 +57,7 @@ export function MessageError({ message, className = '' }: MessageErrorProps) {
             <Button
               variant='outline'
               size='sm'
-              onClick={() =>
-                window.open('/console/setting?tab=ratio', '_blank')
-              }
+              onClick={() => window.open(getSettingsTabPath('ratio'), '_blank')}
             >
               <Settings className='mr-1 h-3.5 w-3.5' />
               {t('Go to Settings')}

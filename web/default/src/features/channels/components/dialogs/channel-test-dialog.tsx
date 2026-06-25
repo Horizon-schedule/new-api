@@ -28,6 +28,7 @@ import {
 } from '@tanstack/react-table'
 import { Loader2, Settings } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { getSettingsTabPath } from '@/features/system-settings/settings-tabs.config'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -376,7 +377,7 @@ export function ChannelTestDialog({
                   size='sm'
                   className='w-fit'
                   onClick={() =>
-                    window.open('/console/setting?tab=ratio', '_blank')
+                    window.open(getSettingsTabPath('ratio'), '_blank')
                   }
                 >
                   <Settings className='mr-1 h-3 w-3' />
