@@ -40,6 +40,7 @@ import { useMediaQuery } from '@/hooks'
 import { Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -276,6 +277,10 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
       pageIndex: 0,
       pageSize: 20,
     })
+    const [hiddenUnsetModelNames, setHiddenUnsetModelNames] = useState<
+      Set<string>
+    >(() => new Set())
+    const [batchDeleteOpen, setBatchDeleteOpen] = useState(false)
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
       () => {
         const saved = localStorage.getItem(STORAGE_KEY)
@@ -475,7 +480,10 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
       }
 
       if (onlyUnsetModels) {
-        rows = rows.filter(isBasePricingUnset)
+        rows = rows.filter(
+          (row) =>
+            isBasePricingUnset(row) && !hiddenUnsetModelNames.has(row.name)
+        )
       }
 
       if (filterVendor !== 'all') {
@@ -500,6 +508,7 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
       enabledModelNames,
       filterVendor,
       modelVendorByName,
+      hiddenUnsetModelNames,
     ])
 
     const pricingVendorCounts = useMemo(() => {
@@ -601,8 +610,10 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
       []
     )
 
-    const handleDelete = useCallback(
-      (name: string) => {
+    const deleteModelsFromPricing = useCallback(
+      (names: string[]) => {
+        if (names.length === 0) return
+
         const priceMap = safeJsonParse<Record<string, number>>(modelPrice, {
           fallback: {},
           silent: true,
@@ -644,16 +655,18 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
           { fallback: {}, silent: true }
         )
 
-        delete priceMap[name]
-        delete ratioMap[name]
-        delete cacheMap[name]
-        delete createCacheMap[name]
-        delete completionMap[name]
-        delete imageMap[name]
-        delete audioMap[name]
-        delete audioCompletionMap[name]
-        delete billingModeMap[name]
-        delete billingExprMap[name]
+        for (const name of names) {
+          delete priceMap[name]
+          delete ratioMap[name]
+          delete cacheMap[name]
+          delete createCacheMap[name]
+          delete completionMap[name]
+          delete imageMap[name]
+          delete audioMap[name]
+          delete audioCompletionMap[name]
+          delete billingModeMap[name]
+          delete billingExprMap[name]
+        }
 
         onChange('ModelPrice', JSON.stringify(priceMap, null, 2))
         onChange('ModelRatio', JSON.stringify(ratioMap, null, 2))
@@ -674,6 +687,22 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
           'billing_setting.billing_expr',
           JSON.stringify(billingExprMap, null, 2)
         )
+
+        if (onlyUnsetModels) {
+          setHiddenUnsetModelNames((previous) => {
+            const next = new Set(previous)
+            for (const name of names) {
+              next.add(name)
+            }
+            return next
+          })
+        }
+
+        if (editData && names.includes(editData.name)) {
+          setEditData(null)
+          setEditorOpen(false)
+          setSheetOpen(false)
+        }
       },
       [
         modelPrice,
@@ -687,7 +716,30 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
         billingMode,
         billingExpr,
         onChange,
+        onlyUnsetModels,
+        editData,
       ]
+    )
+
+    const persistPricingChanges = useCallback(() => {
+      if (autoPersistChanges && onPersistChanges) {
+        queueMicrotask(() => {
+          void onPersistChanges()
+        })
+      }
+    }, [autoPersistChanges, onPersistChanges])
+
+    const handleDelete = useCallback(
+      (name: string) => {
+        deleteModelsFromPricing([name])
+        persistPricingChanges()
+        toast.success(
+          autoPersistChanges
+            ? t('Pricing removed')
+            : t('Pricing updated in draft')
+        )
+      },
+      [autoPersistChanges, deleteModelsFromPricing, persistPricingChanges, t]
     )
 
     const columns = useMemo<ColumnDef<ModelRow>[]>(() => {
@@ -696,11 +748,25 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
           id: 'select',
           header: ({ table }) => (
             <Checkbox
-              checked={table.getIsAllPageRowsSelected()}
-              indeterminate={table.getIsSomePageRowsSelected()}
-              onCheckedChange={(value) =>
-                table.toggleAllPageRowsSelected(!!value)
+              checked={
+                onlyUnsetModels
+                  ? table.getIsAllRowsSelected()
+                  : table.getIsAllPageRowsSelected()
               }
+              indeterminate={
+                onlyUnsetModels
+                  ? table.getIsSomeRowsSelected() &&
+                    !table.getIsAllRowsSelected()
+                  : table.getIsSomePageRowsSelected() &&
+                    !table.getIsAllPageRowsSelected()
+              }
+              onCheckedChange={(value) => {
+                if (onlyUnsetModels) {
+                  table.toggleAllRowsSelected(!!value)
+                  return
+                }
+                table.toggleAllPageRowsSelected(!!value)
+              }}
               aria-label={t('Select all')}
               className='translate-y-[2px]'
             />
@@ -803,7 +869,7 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
           enableHiding: false,
         },
       ]
-    }, [handleEdit, handleDelete, t])
+    }, [handleEdit, handleDelete, onlyUnsetModels, t])
 
     const table = useReactTable({
       data: models,
@@ -1013,6 +1079,31 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
       )
     }, [editData, persistPricingData, t, table])
 
+    const handleBatchDelete = useCallback(() => {
+      const selectedCount = table.getFilteredSelectedRowModel().rows.length
+      if (selectedCount === 0) {
+        toast.error(t('Please select items to delete'))
+        return
+      }
+      setBatchDeleteOpen(true)
+    }, [table, t])
+
+    const confirmBatchDelete = useCallback(() => {
+      const names = table
+        .getFilteredSelectedRowModel()
+        .rows.map((row) => row.original.name)
+
+      deleteModelsFromPricing(names)
+      table.resetRowSelection()
+      setBatchDeleteOpen(false)
+      persistPricingChanges()
+      toast.success(
+        t('Deleted {{count}} models', {
+          count: names.length,
+        })
+      )
+    }, [deleteModelsFromPricing, persistPricingChanges, t, table])
+
     const selectedTargetCount = table.getFilteredSelectedRowModel().rows.length
 
     return (
@@ -1160,13 +1251,36 @@ export const ModelRatioVisualEditor = memo(function ModelRatioVisualEditor({
         </div>
 
         <DataTableBulkActions table={table} entityName={t('model')}>
-          <Button size='sm' disabled={!editData} onClick={handleBatchCopy}>
-            <Copy data-icon='inline-start' />
-            {editData
-              ? t('Copy {{name}} pricing', { name: editData.name })
-              : t('Open a source model first')}
-          </Button>
+          {onlyUnsetModels ? (
+            <Button
+              size='sm'
+              variant='destructive'
+              onClick={handleBatchDelete}
+            >
+              <Trash2 data-icon='inline-start' />
+              {t('Delete')}
+            </Button>
+          ) : (
+            <Button size='sm' disabled={!editData} onClick={handleBatchCopy}>
+              <Copy data-icon='inline-start' />
+              {editData
+                ? t('Copy {{name}} pricing', { name: editData.name })
+                : t('Open a source model first')}
+            </Button>
+          )}
         </DataTableBulkActions>
+
+        <ConfirmDialog
+          open={batchDeleteOpen}
+          onOpenChange={setBatchDeleteOpen}
+          title={t('Delete selected models?')}
+          desc={t(
+            'This will remove pricing configuration for the selected models and hide them from the unset list.'
+          )}
+          destructive
+          handleConfirm={confirmBatchDelete}
+          confirmText={t('Delete')}
+        />
 
         {isMobile && (
           <ModelPricingSheet
